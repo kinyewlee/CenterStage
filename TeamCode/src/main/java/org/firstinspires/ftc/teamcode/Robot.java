@@ -30,6 +30,7 @@ import java.util.List;
 public class Robot {
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     public Servo armServo;
+    public Servo roller;
     private List<DcMotorEx> motors;
     private Context _appContext;
     private int[] beepSoundID = new int[3];
@@ -40,11 +41,12 @@ public class Robot {
     IMU imu;
     private static final double MAX_VELOCITY = 2800d;
     private static final double COUNTS_PER_MOTOR_REV = 529.2d;    // eg: HD Hex Motor 20:1 560, core hex 288, 40:1 1120
-    private static final double DRIVE_GEAR_REDUCTION = 1d;     // This is < 1.0 if geared UP, eg. 26d/10d
+    private static final double DRIVE_GEAR_REDUCTION = 0.75d;     // This is < 1.0 if geared UP, eg. 26d/10d
     private static final double WHEEL_DIAMETER_INCHES = 2.953d;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     double armPosition;
+    double rollerMovement;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -54,12 +56,15 @@ public class Robot {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         leftFront.setDirection(Direction.REVERSE);
-        leftRear.setDirection(Direction.FORWARD);
+        leftRear.setDirection(Direction.REVERSE);
         rightFront.setDirection(Direction.FORWARD);
         rightRear.setDirection(Direction.FORWARD);
 
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();
+
+        roller = hardwareMap.servo.get("roller");
+        rollerMovement = roller.getPosition();
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
@@ -167,10 +172,35 @@ public class Robot {
     }
 
     public void toggleArm() {
-        if (armPosition == 0.7d) {
+        if (armPosition == 0.4d) {
+            setArmPosition(0.5d);
+        } else if (armPosition == 0.5d) {
             setArmPosition(0d);
         } else {
-            setArmPosition(0.7d);
+            setArmPosition(0.4d);
         }
     }
+
+    public void setRollerMovement(double newRollerMovement) {
+        if (rollerMovement != newRollerMovement) {
+            rollerMovement = newRollerMovement;
+            roller.setPosition(rollerMovement);
+        }
+    }
+    public void Intake() {
+        if (rollerMovement != 1) {
+            setRollerMovement(1);
+        }
+    }
+    public void Outtake() {
+        if (rollerMovement != 0) {
+            setRollerMovement(0);
+        }
+    }
+    public void StopRoller() {
+        if (rollerMovement != 0.5) {
+            setRollerMovement(0.5);
+        }
+    }
+
 }
