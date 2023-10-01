@@ -28,22 +28,41 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.x || gamepad2.x) {
                 if (!x_pressed) {
                     x_pressed = true;
+                    robot.toggleArm();
                 }
             } else { // Reset the 'X' button press flag
                 x_pressed = false;
             }
             //endregion
 
+            if (gamepad1.y || gamepad2.y) {
+                if (!y_pressed) {
+                    y_pressed = true;
+                    robot.armServo.setPosition(0.7);
+                }
+            } else { // Reset the 'Y' button press flag
+                y_pressed = false;
+            }
+
             //region left bumper
             if (gamepad1.left_bumper || gamepad2.left_bumper) {
                 if (!lb_pressed) {
                     lb_pressed = true;
+                    robot.intake_motor.setPower(-1.0);
                 }
             } else {
                 lb_pressed = false;
             }
             //endregion
 
+            if (gamepad1.right_bumper || gamepad2.right_bumper) {
+                if (!rb_pressed) {
+                    rb_pressed = true;
+                    robot.intake_motor();
+                }
+            } else {
+                rb_pressed = false;
+            }
             //region drivetrain control
             double drive = -gamepad1.left_stick_y;
             double turn = gamepad1.left_stick_x;

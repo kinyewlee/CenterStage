@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Robot {
-    public DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    public DcMotorEx leftFront, leftRear, rightRear, rightFront, intake_motor;
     public Servo armServo;
     private List<DcMotorEx> motors;
     private Context _appContext;
@@ -37,10 +37,12 @@ public class Robot {
     // create a sound parameter that holds the desired player parameters.
     SoundPlayer.PlaySoundParams soundParams = new SoundPlayer.PlaySoundParams(false);
 
+    boolean intake_running;
+
     IMU imu;
     private static final double MAX_VELOCITY = 2800d;
-    private static final double COUNTS_PER_MOTOR_REV = 529.2d;    // eg: HD Hex Motor 20:1 560, core hex 288, 40:1 1120
-    private static final double DRIVE_GEAR_REDUCTION = 1d;     // This is < 1.0 if geared UP, eg. 26d/10d
+    private static final double COUNTS_PER_MOTOR_REV = 1120d;    // eg: HD Hex Motor 20:1 560, core hex 288, 40:1 1120
+    private static final double DRIVE_GEAR_REDUCTION = 0.67d;     // This is < 1.0 if geared UP, eg. 26d/10d
     private static final double WHEEL_DIAMETER_INCHES = 2.953d;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
@@ -54,9 +56,14 @@ public class Robot {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         leftFront.setDirection(Direction.REVERSE);
-        leftRear.setDirection(Direction.FORWARD);
+        leftRear.setDirection(Direction.REVERSE);
         rightFront.setDirection(Direction.FORWARD);
         rightRear.setDirection(Direction.FORWARD);
+
+        intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
+        intake_motor.setDirection(Direction.REVERSE);
+
+        intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
 
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();
@@ -167,10 +174,23 @@ public class Robot {
     }
 
     public void toggleArm() {
-        if (armPosition == 0.7d) {
+        if (armPosition == (1.0)){
             setArmPosition(0d);
         } else {
-            setArmPosition(0.7d);
+            setArmPosition(1.0d);
+        }
+    }
+
+    public void intake_motor() {
+        if (intake_running) {
+            intake_running = false;
+            intake_motor.setPower(0);
+
+        } else {
+            intake_running = true;
+            intake_motor.setPower(1.0);
         }
     }
 }
+
+
