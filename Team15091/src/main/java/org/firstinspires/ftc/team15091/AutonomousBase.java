@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.team15091;
 
-import android.app.Activity;
-import android.graphics.Color;
-import android.view.View;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -12,7 +12,6 @@ public abstract class AutonomousBase extends OpModeBase {
     protected PixelPosition pixelPos = PixelPosition.Left;
     protected long delay_start = 0;
     public boolean should_park = true;
-    View relativeLayout;
     final protected void setupAndWait() {
         robot.init(hardwareMap);
         robotDriver = new RobotDriver(robot, this);

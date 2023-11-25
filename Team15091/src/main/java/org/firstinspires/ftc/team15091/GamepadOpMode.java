@@ -15,6 +15,8 @@ public class GamepadOpMode extends OpModeBase {
 
         double rollerVelocity = 0.0; // Initial velocity
         boolean isRollerRunning = false; // Track whether the roller is running
+        boolean isWinchRunning = false; // Track whether the winch is running
+        int currentWinchPosition = 0;
         boolean loweringInProgress = false; // Initialize a flag to track lowering state
         long liftStartTime = System.currentTimeMillis();
 
@@ -72,7 +74,7 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.x) {
                 if (!x_pressed) {
                     x_pressed = true;
-                    robot.setBowlPosition(0d);
+                    robot.setBowlPosition(0.5d);
                     robot.setArmPosition(0.7d);
                     loweringInProgress = !loweringInProgress;
                     liftStartTime = System.currentTimeMillis();
@@ -113,6 +115,8 @@ public class GamepadOpMode extends OpModeBase {
                 if (!y_pressed) {
                     y_pressed = true;
                 }
+            } else {
+                y_pressed = false;
             }
             //endregion
 
@@ -156,6 +160,41 @@ public class GamepadOpMode extends OpModeBase {
             robot.rollerMotor.setVelocity(rollerVelocity);
             //endregion
 
+            //region winch
+            if (gamepad1.dpad_up || (gamepad1.dpad_down && !robot.winchSwitch.isPressed())) {
+                if (!dpad_pressed) {
+                    if (!isWinchRunning) {
+                        if (gamepad1.dpad_up) {
+                            robot.winchMotor.setTargetPosition(14500);
+                            robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            robot.winchMotor.setPower(1d);
+                        } else if (gamepad1.dpad_down && !robot.winchSwitch.isPressed()) {
+                            robot.winchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                            robot.winchMotor.setPower(-1d);
+                        }
+                        isWinchRunning = true;
+                    } else {
+                        currentWinchPosition = robot.winchMotor.getCurrentPosition();
+                        isWinchRunning = false;
+                    }
+                    dpad_pressed = true;
+                }
+            } else {
+                if (robot.winchSwitch.isPressed()) {
+                    if (isWinchRunning) {
+                        robot.winchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        isWinchRunning = false;
+                    }
+                } else if (!isWinchRunning) {
+                    robot.winchMotor.setTargetPosition(currentWinchPosition);
+                    robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.winchMotor.setPower(1d);
+                }
+
+                dpad_pressed = false;
+            }
+            //endregion
+
             //region drivetrain control
             double leftStickY = -gamepad1.left_stick_y;  // Invert if necessary
             double rightStickY = -gamepad1.right_stick_y;  // Invert if necessary
@@ -176,16 +215,6 @@ public class GamepadOpMode extends OpModeBase {
             drive *= 0.6;
             double turn = gamepad1.left_stick_x * 0.6d;
             double side = gamepad1.right_stick_x * 0.8d;
-
-            if (gamepad1.dpad_up) {
-                drive = 0.2d;
-            } else if (gamepad1.dpad_down) {
-                drive = -0.2d;
-            } else if (gamepad1.dpad_left) {
-                turn = -0.2d;
-            } else if (gamepad1.dpad_right) {
-                turn = 0.2d;
-            }
 
             double leftFrontPower = drive + turn + side;
             double leftBackPower = drive + turn - side;
@@ -213,6 +242,7 @@ public class GamepadOpMode extends OpModeBase {
                 if (!guide_pressed) {
                     guide_pressed = true;
 
+                    telemetry.clear();
                     telemetry.addLine("motor | ")
                             .addData("lf", String.format("%.1f", leftFrontPower))
                             .addData("lr", String.format("%.1f", leftBackPower))
@@ -229,8 +259,12 @@ public class GamepadOpMode extends OpModeBase {
                     telemetry.addLine("arm | ")
                             .addData("pos", () -> String.format("%d", robot.liftMotor.getCurrentPosition()))
                             .addData("amp", () -> String.format("%.1f", robot.liftMotor.getCurrent(CurrentUnit.AMPS)));
+                    telemetry.addLine("winch | ")
+                            .addData("pos", () -> String.format("%d", robot.winchMotor.getCurrentPosition()))
+                            .addData("amp", () -> String.format("%.1f", robot.winchMotor.getCurrent(CurrentUnit.AMPS)));
                     telemetry.addLine("sensor | ")
                             .addData("limit", () -> String.format("%s", robot.limitSwitch.getState()))
+                            .addData("winch", () -> String.format("%s", robot.winchSwitch.isPressed()))
                             .addData("front", () -> String.format("%.1f cm", robot.frontSensor.getDistance(DistanceUnit.CM)));
                     telemetry.update();
                 }

@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -26,11 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Robot {
-    public DcMotorEx liftMotor, rollerMotor;
+    public DcMotorEx liftMotor, rollerMotor, winchMotor;
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     public Servo armServo, bowlServo;
     private List<DcMotorEx> motors;
     public DigitalChannel limitSwitch;
+    public TouchSensor winchSwitch;
     public DistanceSensor frontSensor;
     private Context _appContext;
     private int[] beepSoundID = new int[3];
@@ -76,7 +78,17 @@ public class Robot {
         rollerMotor.setMode(RunMode.STOP_AND_RESET_ENCODER);
         rollerMotor.setMode(RunMode.RUN_USING_ENCODER);
 
+        winchMotor = hardwareMap.get(DcMotorEx.class, "winch_motor");
+        winchMotor.setDirection(Direction.REVERSE);
+        winchMotor.setCurrentAlert(1d, CurrentUnit.AMPS);
+        winchMotor.setPositionPIDFCoefficients(6d);
+        winchMotor.setTargetPositionTolerance(2);
+        winchMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        winchMotor.setMode(RunMode.STOP_AND_RESET_ENCODER);
+        winchMotor.setMode(RunMode.RUN_USING_ENCODER);
+
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit_sensor");
+        winchSwitch = hardwareMap.touchSensor.get("winch_sensor");
         frontSensor = hardwareMap.get(DistanceSensor.class, "sensor_front");
 
         armServo = hardwareMap.servo.get("servo_arm");
@@ -212,10 +224,10 @@ public class Robot {
     }
 
     public void toggleBowl() {
-        if (bowlPosition == 0d) {
+        if (bowlPosition == 0.5d) {
             setBowlPosition(1d);
         } else {
-            setBowlPosition(0d);
+            setBowlPosition(0.5d);
         }
     }
 
