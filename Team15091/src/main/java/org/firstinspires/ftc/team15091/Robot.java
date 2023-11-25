@@ -94,7 +94,8 @@ public class Robot {
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();
         bowlServo = hardwareMap.servo.get("servo_bowl");
-        bowlPosition = bowlServo.getPosition();
+        // bowlPosition = bowlServo.getPosition();
+        bowlPosition = 0.5;
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
