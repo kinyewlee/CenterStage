@@ -78,18 +78,11 @@ public class GamepadOpmode extends OpModeBase {
                 // The inputs have different signs, so set drive to the sum of both.
                 drive = leftStickY + rightStickY;
             }
-            double turn = gamepad1.left_stick_x;
-            double side = gamepad1.right_stick_x;
 
-            if (gamepad1.dpad_up) {
-                drive = 0.2d;
-            } else if (gamepad1.dpad_down) {
-                drive = -0.2d;
-            } else if (gamepad1.dpad_left) {
-                turn = -0.2d;
-            } else if (gamepad1.dpad_right) {
-                turn = 0.2d;
-            }
+            // Apply the scaling factor (0.6 in this case):
+            drive *= 0.6;
+            double turn = gamepad1.left_stick_x * 0.6d;
+            double side = gamepad1.right_stick_x * 0.8d;
 
             double leftFrontPower = drive + turn + side;
             double leftBackPower = drive + turn - side;

@@ -13,12 +13,14 @@ public class GamepadOpMode extends OpModeBase {
     public void runOpMode() throws InterruptedException {
         int armLimit = 2400;
 
+        boolean dpadLeftRightPressed = false;
         double rollerVelocity = 0.0; // Initial velocity
         boolean isRollerRunning = false; // Track whether the roller is running
         boolean isWinchRunning = false; // Track whether the winch is running
         int currentWinchPosition = 0;
         boolean loweringInProgress = false; // Initialize a flag to track lowering state
         long liftStartTime = System.currentTimeMillis();
+        int droneSequence = 0;
 
         robot.init(hardwareMap);
 
@@ -129,7 +131,7 @@ public class GamepadOpMode extends OpModeBase {
                         isRollerRunning = false;
                     } else if (!limitSwitch) {
                         // If the roller is stopped, start it with positive velocity
-                        rollerVelocity = 1200.0;
+                        rollerVelocity = 1500.0;
 
                         isRollerRunning = true;
                         robot.setArmPosition(0.9);
@@ -169,8 +171,14 @@ public class GamepadOpMode extends OpModeBase {
                             robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             robot.winchMotor.setPower(1d);
                         } else if (gamepad1.dpad_down && !robot.winchSwitch.isPressed()) {
-                            robot.winchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                            robot.winchMotor.setPower(-1d);
+                            if (robot.winchMotor.getCurrentPosition() > 5000) {
+                                robot.winchMotor.setTargetPosition(5000);
+                                robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                                robot.winchMotor.setPower(1d);
+                            } else {
+                                robot.winchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                                robot.winchMotor.setPower(-1d);
+                            }
                         }
                         isWinchRunning = true;
                     } else {
@@ -192,6 +200,38 @@ public class GamepadOpMode extends OpModeBase {
                 }
 
                 dpad_pressed = false;
+            }
+            //endregion
+
+            //region drone
+            if (gamepad1.dpad_left) {
+                if (!dpadLeftRightPressed) {
+                    dpadLeftRightPressed = true;
+                    robot.railServo.setPosition(0.4);
+                    robot.droneServo.setPosition(1);
+                    droneSequence = 0;
+                }
+            } else if (gamepad1.dpad_right) {
+                if (!dpadLeftRightPressed) {
+                    dpadLeftRightPressed = true;
+                    switch (droneSequence) {
+                        case 0:
+                            robot.railServo.setPosition(0.65);
+                            break;
+                        case 3:
+                            robot.beep();
+                            break;
+                        case 4:
+                            robot.droneServo.setPosition(0);
+                            break;
+                        case 5:
+
+                            break;
+                    }
+                    droneSequence++;
+                }
+            } else {
+                dpadLeftRightPressed = false;
             }
             //endregion
 

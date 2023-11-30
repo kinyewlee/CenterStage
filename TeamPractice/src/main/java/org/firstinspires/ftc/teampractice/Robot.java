@@ -25,7 +25,7 @@ import java.util.List;
 
 public class Robot {
     public DcMotorEx armMotor;
-    public Servo grabberServo, frontServo;
+    public Servo grabberServo;
 
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -55,8 +55,6 @@ public class Robot {
 
         grabberServo = hardwareMap.get(Servo.class, "grabber_servo");
         grabberPosition = grabberServo.getPosition();
-
-        frontServo = hardwareMap.get(Servo.class, "front_servo");
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit_sensor");
 
@@ -185,15 +183,6 @@ public class Robot {
         } else {
             setGrabber(1d);
         }
-    }
-
-    public void setFrontServo(boolean newPosition) {
-        frontServo.setPosition(newPosition ? 0d : 0.6d);
-    }
-
-    public void toggleFrontServo() {
-        frontServoPosition = !frontServoPosition;
-        setFrontServo(frontServoPosition);
     }
 
     public void setArmMode(DcMotor.RunMode newMode) {
