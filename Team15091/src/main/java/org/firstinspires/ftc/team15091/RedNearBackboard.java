@@ -15,7 +15,7 @@ public class RedNearBackboard extends AutonomousBase{
     Thread armUp = new Thread() {
         public void run() {
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.liftMotor.setTargetPosition(90);
+            robot.liftMotor.setTargetPosition(105);
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             while(robot.liftMotor.isBusy()) {
                 robot.liftMotor.setPower(0.8);
@@ -32,7 +32,7 @@ public class RedNearBackboard extends AutonomousBase{
             robot.liftMotor.setTargetPosition(0);
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             while(robot.liftMotor.isBusy()) {
-                robot.liftMotor.setPower(0.8);
+                robot.liftMotor.setPower(0.6);
                 idle();
             }
             robot.liftMotor.setPower(0);
@@ -53,7 +53,7 @@ public class RedNearBackboard extends AutonomousBase{
             robot.togglePixelHolder(true); // release pixel
             sleep(500);
             robotDriver.gyroDrive(0.3, -10, -45, 3, null); // move backward
-            armUp.run();
+            armUp.start();
             robotDriver.gyroTurn(0.2, -90, 3);
             // robotDriver.gyroSlide(0.3, 10, 90, 3, null); // slide one tile to the left
             robotDriver.gyroDrive(0.3, 22.5, -90, 3, null);
@@ -77,9 +77,9 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
             robot.setBowlPosition(0.5);
-            sleep(200);
-            armDown.run();
-            robotDriver.gyroSlide(0.3, -22.5, -90, 3, null);
+            sleep(600);
+            armDown.start();
+            robotDriver.gyroSlide(0.5, -22.5, -90, 3, null);
             frontDistance.setThreshold(7);
             robotDriver.gyroDrive(0.3, 22.5, -90,  3, frontDistance);
         }
@@ -89,7 +89,7 @@ public class RedNearBackboard extends AutonomousBase{
             robot.togglePixelHolder(true); // release pixel
             sleep(500);
             robotDriver.gyroDrive(0.3, -10, 45, 3, null); // move backward
-            armUp.run();
+            armUp.start();
             robotDriver.gyroTurn(0.2, -90, 3);
             robotDriver.gyroDrive(0.3, 22.5, -90, 3, null);
             for (int i = 0; i < 5; i++) { // repeatedly scan for april tags while moving left
@@ -113,16 +113,16 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
             robot.setBowlPosition(0.5);
-            sleep(200);
-            armDown.run();
-            robotDriver.gyroSlide(0.3, -34, -90, 5, null);
+            sleep(600);
+            armDown.start();
+            robotDriver.gyroSlide(0.5, -34, -90, 5, null);
             frontDistance.setThreshold(7);
             robotDriver.gyroDrive(0.3, 22.5, -90,  5, frontDistance);
         }
         else { // pixel in the middle position
             robotDriver.gyroDrive(0.2, 29.5, 0, 5, null);
             robotDriver.gyroDrive(0.2, -7, 0, 5, null);
-            armUp.run();
+            armUp.start();
             robotDriver.gyroTurn(0.1, -90, 5);
             robotDriver.gyroDrive(0.3, 22.5, -90, 5, null);
 
@@ -150,9 +150,9 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
             robot.setBowlPosition(0.5);
-            sleep(200);
-            armDown.run();
-            robotDriver.gyroSlide(0.3, -29, -90, 5, null);
+            sleep(600);
+            armDown.start();
+            robotDriver.gyroSlide(0.5, -29, -90, 5, null);
             frontDistance.setThreshold(7);
             robotDriver.gyroDrive(0.3, 22.5, -90,  5, frontDistance);
         }

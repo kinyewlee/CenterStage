@@ -29,7 +29,7 @@ import java.util.List;
 public class Robot {
     public DcMotorEx liftMotor, rollerMotor, winchMotor;
     public DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public Servo armServo, bowlServo;
+    public Servo armServo, bowlServo, railServo, droneServo;
     private List<DcMotorEx> motors;
     public DigitalChannel limitSwitch;
     public TouchSensor winchSwitch;
@@ -91,6 +91,8 @@ public class Robot {
         winchSwitch = hardwareMap.touchSensor.get("winch_sensor");
         frontSensor = hardwareMap.get(DistanceSensor.class, "sensor_front");
 
+        railServo = hardwareMap.servo.get("servo_rail");
+        droneServo = hardwareMap.servo.get("servo_drone");
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();
         bowlServo = hardwareMap.servo.get("servo_bowl");
@@ -214,6 +216,7 @@ public class Robot {
             setArmPosition(0d);
         } else {
             setArmPosition(0.7d);
+            setBowlPosition(0.5d);
         }
     }
 
