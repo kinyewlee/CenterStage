@@ -31,7 +31,7 @@ public class Robot {
     private List<DcMotorEx> motors;
     public DigitalChannel limitSwitch;
     private Context _appContext;
-    private int[] beepSoundID = new int[2];
+    private int[] beepSoundID = new int[6];
     boolean soundPlaying = false;
     // create a sound parameter that holds the desired player parameters.
     SoundPlayer.PlaySoundParams soundParams = new SoundPlayer.PlaySoundParams(false);
@@ -78,6 +78,10 @@ public class Robot {
         _appContext = hardwareMap.appContext;
         beepSoundID[0] = hardwareMap.appContext.getResources().getIdentifier("beep", "raw", hardwareMap.appContext.getPackageName());
         beepSoundID[1] = hardwareMap.appContext.getResources().getIdentifier("ss_laser", "raw", hardwareMap.appContext.getPackageName());
+        beepSoundID[2] = hardwareMap.appContext.getResources().getIdentifier("one", "raw", hardwareMap.appContext.getPackageName());
+        beepSoundID[3] = hardwareMap.appContext.getResources().getIdentifier("two", "raw", hardwareMap.appContext.getPackageName());
+        beepSoundID[4] = hardwareMap.appContext.getResources().getIdentifier("three", "raw", hardwareMap.appContext.getPackageName());
+        beepSoundID[5] = hardwareMap.appContext.getResources().getIdentifier("four", "raw", hardwareMap.appContext.getPackageName());
 
         setDriveZeroPowerBehavior(ZeroPowerBehavior.FLOAT);
 

@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.util.Range;
 public class GamepadOpmode extends OpModeBase {
     @Override
     public void runOpMode() throws InterruptedException {
-        int currentTarget = 0;
-        boolean holdPosition = false;
-        int highPolePos = 1950;
+        int highPolePos = 800;
+        int grabSequence = 0;
+        int autoArm = 0; // Initialize a flag to track auto state
 
         robot.init(hardwareMap);
 
@@ -27,27 +27,45 @@ public class GamepadOpmode extends OpModeBase {
         while (opModeIsActive()) {
             //region arm control
             int currentArmPosition = robot.armMotor.getCurrentPosition();
+            boolean limitSwitch = robot.limitSwitch.getState();
 
-            if (gamepad1.left_trigger > 0d) { // raise lift
+            if (gamepad1.left_bumper) { // raise lift
                 robot.armMotor.setTargetPosition(highPolePos);
                 robot.setArmMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.armMotor.setPower(gamepad1.left_trigger);
-                currentTarget = currentArmPosition;
-            } else if (gamepad1.right_trigger > 0d && // lower lift
+                robot.armMotor.setPower(0.3d);
+                autoArm = 0; // Reset the lowering state
+            } else if (gamepad1.right_bumper && // lower lift
                     robot.limitSwitch.getState() == true) { // when limit sensor not pressed
-                double powerScale = currentArmPosition > 800 ? 1d : 0.4d;
+                double powerScale = currentArmPosition > 400 ? 1d : 0.4d;
                 robot.setArmMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-                robot.armMotor.setPower(-gamepad1.right_trigger * powerScale);
-                currentTarget = currentArmPosition;
-                holdPosition = false;
-            } else { // stop lift
-                if (holdPosition == false && robot.limitSwitch.getState() == false) { // limit sensor pressed
-                    robot.setArmMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    currentTarget = 0;
-                } else {
-                    robot.armMotor.setTargetPosition(currentTarget);
-                    robot.setArmMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-                    robot.armMotor.setPower(currentArmPosition > 100 ? 0.8d : 0.3d);
+                robot.armMotor.setPower(-0.3d * powerScale);
+                autoArm = 0; // Reset the lowering state
+            } else {
+                switch (autoArm) {
+                    case 0: // stop lift
+                        robot.armMotor.setPower(0d);
+                        break;
+                    case 1: // lower arm
+                    case 3: // reset arm
+                        robot.setArmMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+                        robot.armMotor.setPower(-0.3d);
+                        break;
+                    case 2: // raise arm
+                        robot.armMotor.setTargetPosition(highPolePos);
+                        robot.setArmMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        robot.armMotor.setPower(0.3d);
+                        break;
+                }
+
+                if (!limitSwitch) { // limit touched
+                    if (autoArm != 2) {
+                        robot.setArmMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                        if (autoArm == 3) {
+                            autoArm = 2;
+                        } else {
+                            autoArm = 0;
+                        }
+                    }
                 }
             }
             //endregion
@@ -56,10 +74,45 @@ public class GamepadOpmode extends OpModeBase {
             if (gamepad1.a) {
                 if (!a_pressed) {
                     a_pressed = true;
-                    robot.toggleGrabber();
+                    switch (grabSequence) {
+                        case 0:
+                            robot.beep(2);
+                            autoArm = 1;
+                            break;
+                        case 1:
+                            robot.beep(3);
+                            robot.setGrabber(0.2d);
+                            break;
+                        case 2:
+                            robot.beep(4);
+                            autoArm = 2;
+                            break;
+                        case 3:
+                            robot.beep(5);
+                            robot.setGrabber(0.8d);
+                            break;
+                        case 4:
+                            break;
+                    }
+                    grabSequence++;
+                    if (grabSequence > 4) {
+                        grabSequence = 0;
+                    }
                 }
             } else {
                 a_pressed = false;
+            }
+
+            if (gamepad1.x) {
+                if (!x_pressed) {
+                    grabSequence = 0;
+                    autoArm = 3;
+                    robot.setGrabber(0.8d);
+                    robot.beep();
+                    x_pressed = true;
+                }
+            } else {
+                x_pressed = false;
             }
             //endregion
 
@@ -80,9 +133,9 @@ public class GamepadOpmode extends OpModeBase {
             }
 
             // Apply the scaling factor (0.6 in this case):
-            drive *= 0.6;
-            double turn = gamepad1.left_stick_x * 0.6d;
-            double side = gamepad1.right_stick_x * 0.8d;
+            drive *= 0.4d;
+            double turn = gamepad1.left_stick_x * 0.5d;
+            double side = gamepad1.right_stick_x * 0.6d;
 
             double leftFrontPower = drive + turn + side;
             double leftBackPower = drive + turn - side;
