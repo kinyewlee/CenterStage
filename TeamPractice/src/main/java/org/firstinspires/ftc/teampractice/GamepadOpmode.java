@@ -78,25 +78,23 @@ public class GamepadOpmode extends OpModeBase {
                         case 0:
                             robot.beep(2);
                             autoArm = 1;
+                            grabSequence = 1;
                             break;
                         case 1:
                             robot.beep(3);
                             robot.setGrabber(0.2d);
+                            grabSequence = 2;
                             break;
                         case 2:
                             robot.beep(4);
                             autoArm = 2;
+                            grabSequence = 3;
                             break;
                         case 3:
                             robot.beep(5);
                             robot.setGrabber(0.8d);
+                            grabSequence = 0;
                             break;
-                        case 4:
-                            break;
-                    }
-                    grabSequence++;
-                    if (grabSequence > 4) {
-                        grabSequence = 0;
                     }
                 }
             } else {
