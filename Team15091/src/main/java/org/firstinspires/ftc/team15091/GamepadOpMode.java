@@ -3,12 +3,15 @@ package org.firstinspires.ftc.team15091;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "Gamepad")
 public class GamepadOpMode extends OpModeBase {
+    Gamepad getDriverGamepad() { return gamepad1; }
+
     @Override
     public void runOpMode() throws InterruptedException {
         int armLimit = 2400;
@@ -21,6 +24,7 @@ public class GamepadOpMode extends OpModeBase {
         boolean loweringInProgress = false; // Initialize a flag to track lowering state
         long liftStartTime = System.currentTimeMillis();
         int droneSequence = 0;
+        double driveScale = 0.6;
 
         robot.init(hardwareMap);
 
@@ -76,7 +80,7 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.x) {
                 if (!x_pressed) {
                     x_pressed = true;
-                    robot.setBowlPosition(0.5d);
+                    robot.closeBowl();
                     robot.setArmPosition(0.7d);
                     loweringInProgress = !loweringInProgress;
                     liftStartTime = System.currentTimeMillis();
@@ -131,7 +135,7 @@ public class GamepadOpMode extends OpModeBase {
                         isRollerRunning = false;
                     } else if (!limitSwitch) {
                         // If the roller is stopped, start it with positive velocity
-                        rollerVelocity = 1500.0;
+                        rollerVelocity = 1600.0;
 
                         isRollerRunning = true;
                         robot.setArmPosition(0.9);
@@ -191,6 +195,7 @@ public class GamepadOpMode extends OpModeBase {
                 if (robot.winchSwitch.isPressed()) {
                     if (isWinchRunning) {
                         robot.winchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        currentWinchPosition = 0;
                         isWinchRunning = false;
                     }
                 } else if (!isWinchRunning) {
@@ -216,7 +221,7 @@ public class GamepadOpMode extends OpModeBase {
                     dpadLeftRightPressed = true;
                     switch (droneSequence) {
                         case 0:
-                            robot.railServo.setPosition(0.65);
+                            robot.railServo.setPosition(0.7);
                             break;
                         case 3:
                             robot.beep();
@@ -236,8 +241,8 @@ public class GamepadOpMode extends OpModeBase {
             //endregion
 
             //region drivetrain control
-            double leftStickY = -gamepad1.left_stick_y;  // Invert if necessary
-            double rightStickY = -gamepad1.right_stick_y;  // Invert if necessary
+            double leftStickY = -getDriverGamepad().left_stick_y;  // Invert if necessary
+            double rightStickY = -getDriverGamepad().right_stick_y;  // Invert if necessary
             double drive;
 
             if (leftStickY >= 0 && rightStickY >= 0) {
@@ -251,10 +256,20 @@ public class GamepadOpMode extends OpModeBase {
                 drive = leftStickY + rightStickY;
             }
 
+            if (Math.abs(drive) > 0.5) {
+                // Adjust driveScale or perform other actions as needed
+                if (driveScale < 1.0) {
+                    driveScale += 0.01; // Adjust the increment value as needed
+                }
+            } else {
+                // Reset driveScale or perform other actions as needed when |drive| is not greater than 0.5
+                driveScale = 0.6;
+            }
             // Apply the scaling factor (0.6 in this case):
-            drive *= 0.6;
-            double turn = gamepad1.left_stick_x * 0.6d;
-            double side = gamepad1.right_stick_x * 0.8d;
+            drive *= driveScale;
+
+            double turn = getDriverGamepad().left_stick_x * 0.6d;
+            double side = getDriverGamepad().right_stick_x * 0.8d;
 
             double leftFrontPower = drive + turn + side;
             double leftBackPower = drive + turn - side;

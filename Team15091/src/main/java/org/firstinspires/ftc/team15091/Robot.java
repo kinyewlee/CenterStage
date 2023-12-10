@@ -220,7 +220,7 @@ public class Robot {
         }
     }
 
-    public void setBowlPosition(double newBowlPosition) {
+    private void setBowlPosition(double newBowlPosition) {
         if (bowlPosition != newBowlPosition) {
             bowlPosition = newBowlPosition;
             bowlServo.setPosition(bowlPosition);
@@ -228,11 +228,19 @@ public class Robot {
     }
 
     public void toggleBowl() {
-        if (bowlPosition == 0.5d) {
-            setBowlPosition(1d);
+        if (bowlPosition == 0.55d) {
+            openBowl(); // open
         } else {
-            setBowlPosition(0.5d);
+            closeBowl(); // close
         }
+    }
+
+    public void closeBowl() {
+        setBowlPosition(0.55d); // close
+    }
+
+    public void openBowl() {
+        setBowlPosition(0.35d); // open
     }
 
     public void togglePixelHolder(boolean release) {
