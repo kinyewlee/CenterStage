@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 public class RobotDriver {
     private Robot _robot;
@@ -142,6 +143,164 @@ public class RobotDriver {
                 // Display drive status for the driver.
                 sendTelemetry(true);
             }
+
+            // Stop all motion;
+            moveRobot(0, 0, 0);
+            _robot.setDriveMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public final void gyroSlideAprilTag (double maxSlideSpeed,
+                                             double maxDistance,
+                                             double heading,
+                                             double timeoutS,
+                                             AprilTagDetector aprilTagDetector,
+                                             int aprilTagId) {
+        if (_opMode.opModeIsActive()) {
+            AprilTagDetection focusedAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+            double currentBearing;
+            double currentRange;
+            double distance;
+            double slideSpeed;
+            if (focusedAprilTag == null) {
+                distance = maxDistance;
+            }
+            else {
+                _robot.beep();
+                currentBearing = focusedAprilTag.ftcPose.bearing;
+                currentRange = focusedAprilTag.ftcPose.range;
+                distance = currentRange * Math.asin(currentBearing * Math.PI / 180);
+                if (currentBearing > 0) { // angle is positive (to the left)
+                    distance = -distance - 1.2;
+                } else { // angle is negative (to the right) or zero
+                    distance = distance + 1.2;
+                }
+            }
+
+            // start motion.
+            _runtime.reset();
+
+            // keep looping while we are still active, and BOTH motors are running.
+             do {
+                 // Set Target and Turn On RUN_TO_POSITION
+                 _robot.setDriveTarget(distance, true);
+                 _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                 // Set the required driving speed  (must be positive for RUN_TO_POSITION)
+                 // Start driving straight, and then enter the control loop
+                 // To be more precise in our positioning, we scale down the motor speeds if we are close to our destination.
+                 slideSpeed = Math.abs(Math.min(1, 0.4 * Math.sqrt(distance)) * maxSlideSpeed);
+                 // _opMode.idle();
+
+                // Determine required steering to keep on heading
+                 //TODO: is it possible to use the yaw of the April Tag for heading instead of the IMU?
+                turnSpeed = getSteeringCorrection(heading, P_DRIVE_GAIN, slideSpeed);
+
+                // if driving in reverse, the motor correction also needs to be reversed
+                if (distance < 0)
+                    turnSpeed *= -1.0;
+
+                 moveRobot(0, turnSpeed, slideSpeed);
+
+                // Apply the turning correction to the current driving speed.
+                AprilTagDetection tempAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+                 if (tempAprilTag != null) { // the april tag was detected; update with the new info
+                     if (focusedAprilTag == null) {
+                         _robot.beep();
+                     }
+                     focusedAprilTag = tempAprilTag;
+                     currentBearing = focusedAprilTag.ftcPose.bearing;
+                     currentRange = focusedAprilTag.ftcPose.range;
+                     distance = currentRange * Math.asin(currentBearing * Math.PI / 180);
+                     if (currentBearing > 0) { // angle is positive (to the left)
+                         distance = -distance - 1.2;
+                     } else { // angle is negative (to the right) or zero
+                         distance = distance + 1.2;
+                     }
+                 }
+                // Display drive status for the driver.
+                sendTelemetry(true);
+            } while (_opMode.opModeIsActive() &&
+                    _runtime.seconds() < timeoutS &&
+                    _robot.isDriveBusy() && distance > 0.3);
+
+            // Stop all motion;
+            moveRobot(0, 0, 0);
+            _robot.setDriveMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+
+    public final void gyroDriveAprilTag (double maxDriveSpeed,
+                                            double maxDistance,
+                                            double heading,
+                                            double timeoutS,
+                                            AprilTagDetector aprilTagDetector,
+                                            int aprilTagId,
+                                            IObjectDetector<Boolean> objectDetector)  {
+        // Ensure that the opmode is still active
+        if (_opMode.opModeIsActive()) {
+            AprilTagDetection focusedAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+            double currentRange;
+            double distance;
+            double driveSpeed;
+            int offset = 3;
+            if (focusedAprilTag == null) {
+                distance = maxDistance;
+            }
+            else {
+                _robot.beep();
+                currentRange = focusedAprilTag.ftcPose.range;
+                distance = currentRange - offset;
+            }
+
+            // reset the timeout time and start motion.
+            _runtime.reset();
+
+
+
+            // keep looping while we are still active, and BOTH motors are running.
+            do {
+
+                // Set Target and Turn On RUN_TO_POSITION
+                _robot.setDriveTarget(distance, false);
+                _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                // Set the required driving speed  (must be positive for RUN_TO_POSITION)
+                // Start driving straight, and then enter the control loop
+                // To be more precise in our positioning, we scale down the motor speeds if we are close to our destination.
+                driveSpeed = Math.abs(Math.min(1, 0.4 * Math.sqrt(distance)) * maxDriveSpeed);
+                //_opMode.idle();
+
+                // Determine required steering to keep on heading
+                turnSpeed = getSteeringCorrection(heading, P_DRIVE_GAIN, maxDriveSpeed);
+
+                // Apply the turning correction to the current driving speed.
+                moveRobot(driveSpeed, turnSpeed, 0);
+
+                // if driving in reverse, the motor correction also needs to be reversed
+                if (distance < 0)
+                    turnSpeed *= -1.0;
+
+                if (objectDetector != null && objectDetector.objectDetected()) {
+                    _robot.beep();
+                    break;
+                }
+
+                AprilTagDetection tempAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+                if (tempAprilTag != null) { // the april tag was detected; update with the new info
+                    if (focusedAprilTag == null) {
+                        _robot.beep();
+                    }
+                    focusedAprilTag = tempAprilTag;
+                    currentRange = focusedAprilTag.ftcPose.range;
+                    distance = currentRange - offset;
+                }
+
+                // Display drive status for the driver.
+                sendTelemetry(true);
+            } while (_opMode.opModeIsActive() &&
+                    _runtime.seconds() < timeoutS &&
+                    _robot.isDriveBusy() && distance > 0.3);
 
             // Stop all motion;
             moveRobot(0, 0, 0);
