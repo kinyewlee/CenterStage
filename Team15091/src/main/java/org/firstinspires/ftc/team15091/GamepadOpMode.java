@@ -213,7 +213,7 @@ public class GamepadOpMode extends OpModeBase {
                 if (!dpadLeftRightPressed) {
                     dpadLeftRightPressed = true;
                     robot.railServo.setPosition(0.4);
-                    robot.droneServo.setPosition(1);
+                    robot.droneServo.setPosition(0);
                     droneSequence = 0;
                 }
             } else if (gamepad1.dpad_right) {
@@ -227,7 +227,7 @@ public class GamepadOpMode extends OpModeBase {
                             robot.beep();
                             break;
                         case 4:
-                            robot.droneServo.setPosition(0);
+                            robot.droneServo.setPosition(1);
                             break;
                         case 5:
 

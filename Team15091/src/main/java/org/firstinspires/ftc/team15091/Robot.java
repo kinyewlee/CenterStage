@@ -53,6 +53,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     private RunMode liftMode;
     double armPosition, bowlPosition;
+    private static final double BOWL_CLOSE_POSITION = 0.56d;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -216,7 +217,7 @@ public class Robot {
             setArmPosition(0d);
         } else {
             setArmPosition(0.7d);
-            setBowlPosition(0.5d);
+            closeBowl();
         }
     }
 
@@ -228,7 +229,7 @@ public class Robot {
     }
 
     public void toggleBowl() {
-        if (bowlPosition == 0.55d) {
+        if (bowlPosition == BOWL_CLOSE_POSITION) {
             openBowl(); // open
         } else {
             closeBowl(); // close
@@ -236,11 +237,11 @@ public class Robot {
     }
 
     public void closeBowl() {
-        setBowlPosition(0.55d); // close
+        setBowlPosition(BOWL_CLOSE_POSITION); // close
     }
 
     public void openBowl() {
-        setBowlPosition(0.35d); // open
+        setBowlPosition(0.4d); // open
     }
 
     public void togglePixelHolder(boolean release) {
