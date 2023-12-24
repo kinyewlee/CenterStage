@@ -72,11 +72,11 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.1, -1, -90, 2, null);
             // robotDriver.gyroSlide(0.1, -3, 90, 3, null); // slide to the right -- in testing this gives a better pixel "bounce"
             sleep(1000);
-            robot.setBowlPosition(0);
+            robot.openBowl();
             sleep(1000);
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
-            robot.setBowlPosition(0.5);
+            robot.closeBowl();
             sleep(600);
             armDown.start();
             robotDriver.gyroSlide(0.5, -22.5, -90, 3, null);
@@ -108,11 +108,11 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.1, 7, -90, 5, frontDistance);
             robotDriver.gyroDrive(0.1, -1, -90, 2, null);
             sleep(1500);
-            robot.setBowlPosition(1);
+            robot.openBowl();
             sleep(1500);
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
-            robot.setBowlPosition(0.5);
+            robot.closeBowl();
             sleep(600);
             armDown.start();
             robotDriver.gyroSlide(0.5, -34, -90, 5, null);
@@ -143,13 +143,11 @@ public class RedNearBackboard extends AutonomousBase{
             robotDriver.gyroDrive(0.1, 6, -90, 5, frontDistance);
             robotDriver.gyroDrive(0.1, -1, -90, 2, null);
             sleep(200);
-            robot.setBowlPosition(0.75);
-            sleep(1000);
-            robot.setBowlPosition(1);
-            sleep(700);
+            robot.openBowl();
+            sleep(1700);
             robotDriver.gyroDrive(0.2, -5, -90, 3, null);
             robot.armServo.setPosition(0.8d);
-            robot.setBowlPosition(0.5);
+            robot.closeBowl();
             sleep(600);
             armDown.start();
             robotDriver.gyroSlide(0.5, -29, -90, 5, null);

@@ -53,6 +53,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     private RunMode liftMode;
     double armPosition, bowlPosition;
+    private static final double BOWL_CLOSE_POSITION = 0.56d;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -96,7 +97,8 @@ public class Robot {
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();
         bowlServo = hardwareMap.servo.get("servo_bowl");
-        bowlPosition = bowlServo.getPosition();
+        // bowlPosition = bowlServo.getPosition();
+        bowlPosition = 0.5;
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
@@ -215,11 +217,11 @@ public class Robot {
             setArmPosition(0d);
         } else {
             setArmPosition(0.7d);
-            setBowlPosition(0.5d);
+            closeBowl();
         }
     }
 
-    public void setBowlPosition(double newBowlPosition) {
+    private void setBowlPosition(double newBowlPosition) {
         if (bowlPosition != newBowlPosition) {
             bowlPosition = newBowlPosition;
             bowlServo.setPosition(bowlPosition);
@@ -227,11 +229,19 @@ public class Robot {
     }
 
     public void toggleBowl() {
-        if (bowlPosition == 0.5d) {
-            setBowlPosition(1d);
+        if (bowlPosition == BOWL_CLOSE_POSITION) {
+            openBowl(); // open
         } else {
-            setBowlPosition(0.5d);
+            closeBowl(); // close
         }
+    }
+
+    public void closeBowl() {
+        setBowlPosition(BOWL_CLOSE_POSITION); // close
+    }
+
+    public void openBowl() {
+        setBowlPosition(0.4d); // open
     }
 
     public void togglePixelHolder(boolean release) {
