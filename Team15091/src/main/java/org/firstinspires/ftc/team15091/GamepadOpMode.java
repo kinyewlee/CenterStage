@@ -22,9 +22,11 @@ public class GamepadOpMode extends OpModeBase {
         boolean isWinchRunning = false; // Track whether the winch is running
         int currentWinchPosition = 0;
         boolean loweringInProgress = false; // Initialize a flag to track lowering state
+        boolean raisingInProgress = false;
         long liftStartTime = System.currentTimeMillis();
         int droneSequence = 0;
         double driveScale = 0.6;
+        double divisor = 2;
 
         robot.init(hardwareMap);
 
@@ -53,22 +55,24 @@ public class GamepadOpMode extends OpModeBase {
                 robot.setLiftMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.liftMotor.setPower(gamepad1.left_trigger);
                 loweringInProgress = false; // Reset the lowering state
+                raisingInProgress = false;
             } else if (gamepad1.right_trigger > 0d &&  // lower lift
                     limitSwitch) { // Check if the limit switch is not pressed
                 double powerScale = currentArmPosition > 800 ? 1d : 0.3d;
                 robot.setLiftMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
                 robot.liftMotor.setPower(-gamepad1.right_trigger * powerScale);
                 loweringInProgress = false; // Reset the lowering state
+                raisingInProgress = false;
             } else {
-                if (!loweringInProgress) { // stop lift
+                if (!loweringInProgress && !raisingInProgress) { // stop lift
                     robot.liftMotor.setPower(0d);
-                } else {
+                } else if (loweringInProgress) {
                     double elapsedTime = (System.currentTimeMillis() - liftStartTime) / 1000.0; // Convert to seconds
                     robot.setLiftMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
                     robot.liftMotor.setPower(elapsedTime > 1d ? -0.8d : -0.1d);
                 }
 
-                if (!limitSwitch) {
+                if (!limitSwitch && !raisingInProgress) {
                     if (loweringInProgress) {
                         loweringInProgress = false;
                         robot.setArmPosition(1d);
@@ -83,6 +87,7 @@ public class GamepadOpMode extends OpModeBase {
                     robot.closeBowl();
                     robot.setArmPosition(0.7d);
                     loweringInProgress = !loweringInProgress;
+                    raisingInProgress = false;
                     liftStartTime = System.currentTimeMillis();
                 }
             } else { // Reset the 'X' button press flag
@@ -119,10 +124,27 @@ public class GamepadOpMode extends OpModeBase {
             //region y button
             if (gamepad1.y) {
                 if (!y_pressed) {
+
                     y_pressed = true;
-                }
+                    robot.liftMotor.setTargetPosition((int)Math.floor(armLimit / divisor));
+                    robot.setLiftMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.setArmPosition(0.7d);
+                    // robot.liftMotor.setPower(1);
+                    loweringInProgress = false;
+                    raisingInProgress = true;
+                    if (divisor - 0.1 >= 1) {
+                        divisor -= 0.1;
+                    }
             } else {
-                y_pressed = false;
+                    y_pressed = false;
+                    if (!raisingInProgress && !loweringInProgress) { // stop lift
+                        robot.liftMotor.setPower(0d);
+                    } else if (raisingInProgress) {
+                        //robot.liftMotor.setTargetPosition(armLimit / 2);
+                        //robot.setLiftMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                        robot.liftMotor.setPower(0.8);
+                    }
+                }      //robot.setLiftMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             }
             //endregion
 
