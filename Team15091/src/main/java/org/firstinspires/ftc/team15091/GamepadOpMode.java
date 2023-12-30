@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Gamepad")
+@TeleOp(name = "Gamepad (1 Driver)")
 public class GamepadOpMode extends OpModeBase {
     Gamepad getDriverGamepad() { return gamepad1; }
 
@@ -171,12 +171,12 @@ public class GamepadOpMode extends OpModeBase {
                 if (!dpad_pressed) {
                     if (!isWinchRunning) {
                         if (gamepad1.dpad_up) {
-                            robot.winchMotor.setTargetPosition(14500);
+                            robot.winchMotor.setTargetPosition(13400); // extend
                             robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             robot.winchMotor.setPower(1d);
                         } else if (gamepad1.dpad_down && !robot.winchSwitch.isPressed()) {
                             if (robot.winchMotor.getCurrentPosition() > 5000) {
-                                robot.winchMotor.setTargetPosition(5000);
+                                robot.winchMotor.setTargetPosition(5000); // hang
                                 robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                                 robot.winchMotor.setPower(1d);
                             } else {

@@ -53,7 +53,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     private RunMode liftMode;
     double armPosition, bowlPosition;
-    private static final double BOWL_CLOSE_POSITION = 0.56d;
+    private static final double BOWL_CLOSE_POSITION = 0.6d;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -214,7 +214,7 @@ public class Robot {
 
     public void toggleArm() {
         if (armPosition == 0.7d) {
-            setArmPosition(0d);
+            extendArm();
         } else {
             setArmPosition(0.7d);
             closeBowl();
@@ -255,5 +255,9 @@ public class Robot {
         filteredDistance = alpha * rawDistance + (1 - alpha) * filteredDistance;
 
         return filteredDistance;
+    }
+
+    void extendArm() {
+        setArmPosition(0);
     }
 }
