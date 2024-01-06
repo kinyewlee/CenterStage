@@ -14,8 +14,11 @@ public class BlueAwayFromBackboard extends AutonomousBase{
         PixelPosition initialPos = rbProcessor.position;
         Thread armUp = new Thread() {
             public void run() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ie) {}
                 robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.liftMotor.setTargetPosition(500);
+                robot.liftMotor.setTargetPosition(400);
                 robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 while(robot.liftMotor.isBusy()) {
                     robot.liftMotor.setPower(0.8);
@@ -111,12 +114,12 @@ public class BlueAwayFromBackboard extends AutonomousBase{
             sleep(500);
             if (should_park) {
                 robotDriver.gyroDrive(0.4d, -6, 0, 3, null); // move back, releasing the pixel
-                robotDriver.gyroSlide(0.3d, -24, 0, 3, null); // slide one tile to the right
-                robotDriver.gyroDrive(0.4d, 22.5, 0, 3, null); // drive one tile forward
+                robotDriver.gyroSlide(0.3d, -20, 0, 3, null); // slide one tile to the right
+                robotDriver.gyroDrive(0.4d, 26, 0, 3, null); // drive one tile forward
                 robotDriver.gyroTurn(0.3d, 90, 5); // turn left
                 if (should_score) {
                     armUp.start();
-                    robotDriver.gyroDrive(speed_multiplier, 96, 90, 10, null); // move forward and park
+                    robotDriver.gyroDrive(speed_multiplier, 92, 90, 10, null); // move forward and park
                     robotDriver.gyroSlideAprilTag(0.2, 24, 90, 7, aprilTagDetector, 2);
                     robotDriver.gyroDrive(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {

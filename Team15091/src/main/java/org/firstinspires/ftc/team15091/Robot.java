@@ -6,6 +6,7 @@ import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode;
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior;
@@ -34,6 +35,7 @@ public class Robot {
     public DigitalChannel limitSwitch;
     public TouchSensor winchSwitch;
     public DistanceSensor frontSensor;
+    public AnalogInput winchAngle;
     private Context _appContext;
     private int[] beepSoundID = new int[3];
     volatile boolean soundPlaying = false;
@@ -53,7 +55,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     private RunMode liftMode;
     double armPosition, bowlPosition;
-    private static final double BOWL_CLOSE_POSITION = 0.6d;
+    private static final double BOWL_CLOSE_POSITION = 0.58d;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -91,6 +93,7 @@ public class Robot {
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit_sensor");
         winchSwitch = hardwareMap.touchSensor.get("winch_sensor");
         frontSensor = hardwareMap.get(DistanceSensor.class, "sensor_front");
+        winchAngle = hardwareMap.analogInput.get("winch_angle");
 
         railServo = hardwareMap.servo.get("servo_rail");
         droneServo = hardwareMap.servo.get("servo_drone");

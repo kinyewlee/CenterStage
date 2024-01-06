@@ -15,7 +15,7 @@ public class BlueNearBackboard extends AutonomousBase{
     Thread armUp = new Thread() {
         public void run() {
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.liftMotor.setTargetPosition(500);
+            robot.liftMotor.setTargetPosition(400);
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             while(robot.liftMotor.isBusy()) {
                 robot.liftMotor.setPower(0.8);
@@ -46,7 +46,6 @@ public class BlueNearBackboard extends AutonomousBase{
         DistanceDetector frontDistance = new DistanceDetector((DistanceSensor)(hardwareMap.get("sensor_front")), 7, false);
         // DistanceDetector frontDistanceShort = new DistanceDetector((DistanceSensor)(hardwareMap.get("sensor_front")), 1, false);
         PixelPosition initialPos = rbProcessor.position;
-        boolean aprilTagFound = false;
         robot.setArmPosition(0.7);
         if (initialPos == PixelPosition.Left) {
             robotDriver.gyroDrive(0.4d, 12d, 0, 3, null);

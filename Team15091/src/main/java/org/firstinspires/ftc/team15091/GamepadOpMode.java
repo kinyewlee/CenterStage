@@ -19,14 +19,14 @@ public class GamepadOpMode extends OpModeBase {
         boolean dpadLeftRightPressed = false;
         double rollerVelocity = 0.0; // Initial velocity
         boolean isRollerRunning = false; // Track whether the roller is running
-        boolean isWinchRunning = false; // Track whether the winch is running
-        int currentWinchPosition = 0;
+        boolean isWinchReset = false; // Track whether the winch is reset
         boolean loweringInProgress = false; // Initialize a flag to track lowering state
         boolean raisingInProgress = false;
         long liftStartTime = System.currentTimeMillis();
         int droneSequence = 0;
         double driveScale = 0.6;
-        double divisor = 2;
+        int runToArmPosition = 500;
+        int yPressCount = 0;
 
         robot.init(hardwareMap);
 
@@ -81,7 +81,7 @@ public class GamepadOpMode extends OpModeBase {
                 }
             }
 
-            if (gamepad1.x) {
+            if (gamepad1.x || gamepad2.x) {
                 if (!x_pressed) {
                     x_pressed = true;
                     robot.closeBowl();
@@ -96,7 +96,7 @@ public class GamepadOpMode extends OpModeBase {
             //endregion
 
             //region a button
-            if (gamepad1.a) {
+            if (gamepad1.a || gamepad2.a) {
                 if (!a_pressed) {
                     a_pressed = true;
                     if (limitSwitch) {
@@ -109,7 +109,7 @@ public class GamepadOpMode extends OpModeBase {
             //endregion
 
             //region b button
-            if (gamepad1.b) {
+            if (gamepad1.b || gamepad2.b) {
                 if (!b_pressed) {
                     b_pressed = true;
                     if (limitSwitch && robot.armPosition == 0) {
@@ -122,19 +122,23 @@ public class GamepadOpMode extends OpModeBase {
             //endregion
 
             //region y button
-            if (gamepad1.y) {
+            if (gamepad1.y || gamepad2.y) {
                 if (!y_pressed) {
-
                     y_pressed = true;
-                    robot.liftMotor.setTargetPosition((int)Math.floor(armLimit / divisor));
+                    robot.setLiftMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.liftMotor.setTargetPosition(runToArmPosition);
                     robot.setLiftMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    robot.setArmPosition(0.7d);
+                    robot.setArmPosition(0d);
                     // robot.liftMotor.setPower(1);
+                    if (raisingInProgress && runToArmPosition + 250 < armLimit) {
+                        runToArmPosition += 250;
+                    }
+                    else if (++yPressCount % 4 == 0 && runToArmPosition + 600 < armLimit) {
+                        runToArmPosition += 600;
+                    }
                     loweringInProgress = false;
                     raisingInProgress = true;
-                    if (divisor - 0.1 >= 1) {
-                        divisor -= 0.1;
-                    }
+                }
             } else {
                     y_pressed = false;
                     if (!raisingInProgress && !loweringInProgress) { // stop lift
@@ -144,12 +148,11 @@ public class GamepadOpMode extends OpModeBase {
                         //robot.setLiftMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                         robot.liftMotor.setPower(0.8);
                     }
-                }      //robot.setLiftMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             }
             //endregion
 
             //region roller
-            if (gamepad1.left_bumper) {
+            if (gamepad1.left_bumper || gamepad2.left_bumper) {
                 if (!lb_pressed) {
                     if (isRollerRunning) {
                         // If the roller is running, stop it
@@ -168,7 +171,7 @@ public class GamepadOpMode extends OpModeBase {
                 lb_pressed = false;
             }
 
-            if (gamepad1.right_bumper) {
+            if (gamepad1.right_bumper || gamepad2.right_bumper) {
                 if (!rb_pressed) {
                     if (isRollerRunning) {
                         // If the roller is running, stop it
@@ -189,56 +192,45 @@ public class GamepadOpMode extends OpModeBase {
             //endregion
 
             //region winch
-            if (gamepad1.dpad_up || (gamepad1.dpad_down && !robot.winchSwitch.isPressed())) {
+            if (gamepad1.dpad_up || gamepad2.dpad_up || ((gamepad1.dpad_down || gamepad2.dpad_down) && !robot.winchSwitch.isPressed())) {
                 if (!dpad_pressed) {
-                    if (!isWinchRunning) {
-                        if (gamepad1.dpad_up) {
-                            robot.winchMotor.setTargetPosition(13400); // extend
+                    if (gamepad1.dpad_up || gamepad2.dpad_up) {
+                        robot.winchMotor.setTargetPosition(12000); // extend
+                        robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        robot.winchMotor.setPower(1d);
+                    } else if ((gamepad1.dpad_down || gamepad2.dpad_down) && !robot.winchSwitch.isPressed() && robot.winchAngle.getVoltage() < 3d) {
+                        if (robot.winchMotor.getCurrentPosition() > 3500) {
+                            robot.winchMotor.setTargetPosition(3500); // hang
                             robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             robot.winchMotor.setPower(1d);
-                        } else if (gamepad1.dpad_down && !robot.winchSwitch.isPressed()) {
-                            if (robot.winchMotor.getCurrentPosition() > 5000) {
-                                robot.winchMotor.setTargetPosition(5000); // hang
-                                robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                                robot.winchMotor.setPower(1d);
-                            } else {
-                                robot.winchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                                robot.winchMotor.setPower(-1d);
-                            }
+                        } else {
+                            robot.winchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                            robot.winchMotor.setPower(-0.3d);
+                            isWinchReset = true;
                         }
-                        isWinchRunning = true;
-                    } else {
-                        currentWinchPosition = robot.winchMotor.getCurrentPosition();
-                        isWinchRunning = false;
                     }
-                    dpad_pressed = true;
                 }
+                dpad_pressed = true;
             } else {
-                if (robot.winchSwitch.isPressed()) {
-                    if (isWinchRunning) {
+                if (robot.winchSwitch.isPressed() || robot.winchAngle.getVoltage() > 3.1d) {
+                    if (isWinchReset) {
                         robot.winchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        currentWinchPosition = 0;
-                        isWinchRunning = false;
+                        isWinchReset = false;
                     }
-                } else if (!isWinchRunning) {
-                    robot.winchMotor.setTargetPosition(currentWinchPosition);
-                    robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    robot.winchMotor.setPower(1d);
                 }
-
                 dpad_pressed = false;
             }
             //endregion
 
             //region drone
-            if (gamepad1.dpad_left) {
+            if (gamepad1.dpad_left || gamepad2.dpad_left) {
                 if (!dpadLeftRightPressed) {
                     dpadLeftRightPressed = true;
                     robot.railServo.setPosition(0.4);
                     robot.droneServo.setPosition(0);
                     droneSequence = 0;
                 }
-            } else if (gamepad1.dpad_right) {
+            } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
                 if (!dpadLeftRightPressed) {
                     dpadLeftRightPressed = true;
                     switch (droneSequence) {
@@ -319,7 +311,7 @@ public class GamepadOpMode extends OpModeBase {
                 if (!guide_pressed) {
                     guide_pressed = true;
 
-                    telemetry.clear();
+                    telemetry.clearAll();
                     telemetry.addLine("motor | ")
                             .addData("lf", String.format("%.1f", leftFrontPower))
                             .addData("lr", String.format("%.1f", leftBackPower))
@@ -338,7 +330,8 @@ public class GamepadOpMode extends OpModeBase {
                             .addData("amp", () -> String.format("%.1f", robot.liftMotor.getCurrent(CurrentUnit.AMPS)));
                     telemetry.addLine("winch | ")
                             .addData("pos", () -> String.format("%d", robot.winchMotor.getCurrentPosition()))
-                            .addData("amp", () -> String.format("%.1f", robot.winchMotor.getCurrent(CurrentUnit.AMPS)));
+                            .addData("amp", () -> String.format("%.1f", robot.winchMotor.getCurrent(CurrentUnit.AMPS)))
+                            .addData("angle", () -> String.format("%.3f", robot.winchAngle.getVoltage()));
                     telemetry.addLine("sensor | ")
                             .addData("limit", () -> String.format("%s", robot.limitSwitch.getState()))
                             .addData("winch", () -> String.format("%s", robot.winchSwitch.isPressed()))
