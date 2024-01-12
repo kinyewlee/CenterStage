@@ -18,7 +18,7 @@ public class BlueAwayFromBackboard extends AutonomousBase{
                     Thread.sleep(3000);
                 } catch (InterruptedException ie) {}
                 robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.liftMotor.setTargetPosition(400);
+                robot.liftMotor.setTargetPosition(450);
                 robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 while(robot.liftMotor.isBusy()) {
                     robot.liftMotor.setPower(0.8);
@@ -54,7 +54,7 @@ public class BlueAwayFromBackboard extends AutonomousBase{
                 if (should_score) {
                     armUp.start();
                     robotDriver.gyroDrive(speed_multiplier, 72, 90, 10, null); // move forward
-                    robotDriver.gyroSlideAprilTag(0.2, 35, 90, 7, aprilTagDetector, 1);
+                    robotDriver.gyroSlideAprilTag(0.2, 32, 90, 7, aprilTagDetector, 1);
                     robotDriver.gyroDrive(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();
@@ -88,7 +88,7 @@ public class BlueAwayFromBackboard extends AutonomousBase{
                 if (should_score) {
                     armUp.start();
                     robotDriver.gyroDrive(speed_multiplier, 72, 90, 10, null); // move forward
-                    robotDriver.gyroSlideAprilTag(0.2, 18, 90, 7, aprilTagDetector, 3);
+                    robotDriver.gyroSlideAprilTag(0.2, 26, 90, 7, aprilTagDetector, 3);
                     robotDriver.gyroDrive(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();
@@ -120,7 +120,7 @@ public class BlueAwayFromBackboard extends AutonomousBase{
                 if (should_score) {
                     armUp.start();
                     robotDriver.gyroDrive(speed_multiplier, 92, 90, 10, null); // move forward and park
-                    robotDriver.gyroSlideAprilTag(0.2, 24, 90, 7, aprilTagDetector, 2);
+                    robotDriver.gyroSlideAprilTag(0.2, 26, 90, 7, aprilTagDetector, 2);
                     robotDriver.gyroDrive(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();

@@ -172,14 +172,15 @@ public class RobotDriver {
                 distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
             }
 
+            _robot.setDriveTarget(distance, true);
+            _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             // start motion.
             _runtime.reset();
 
             // keep looping while we are still active, and BOTH motors are running.
              do {
                  // Set Target and Turn On RUN_TO_POSITION
-                 _robot.setDriveTarget(distance, true);
-                 _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                  // Set the required driving speed  (must be positive for RUN_TO_POSITION)
                  // Start driving straight, and then enter the control loop
@@ -208,6 +209,8 @@ public class RobotDriver {
                      currentBearing = focusedAprilTag.ftcPose.bearing;
                      currentRange = focusedAprilTag.ftcPose.range;
                      distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
+                     _robot.setDriveTarget(distance, true);
+                     _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
                  }
                 // Display drive status for the driver.
                 sendTelemetry(true);

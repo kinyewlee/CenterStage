@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Gamepad (1 Driver)")
+@TeleOp(name = "One Driver")
 public class GamepadOpMode extends OpModeBase {
     Gamepad getDriverGamepad() { return gamepad1; }
 
@@ -141,7 +141,7 @@ public class GamepadOpMode extends OpModeBase {
                 }
             } else {
                     y_pressed = false;
-                    if (!raisingInProgress && !loweringInProgress) { // stop lift
+                    if (!raisingInProgress && !loweringInProgress && gamepad1.left_trigger == 0 && gamepad1.right_trigger == 0) { // stop lift
                         robot.liftMotor.setPower(0d);
                     } else if (raisingInProgress) {
                         //robot.liftMotor.setTargetPosition(armLimit / 2);
@@ -160,7 +160,7 @@ public class GamepadOpMode extends OpModeBase {
                         isRollerRunning = false;
                     } else if (!limitSwitch) {
                         // If the roller is stopped, start it with positive velocity
-                        rollerVelocity = 1600.0;
+                        rollerVelocity = 1800.0;
 
                         isRollerRunning = true;
                         robot.setArmPosition(0.9);
@@ -199,8 +199,8 @@ public class GamepadOpMode extends OpModeBase {
                         robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         robot.winchMotor.setPower(1d);
                     } else if ((gamepad1.dpad_down || gamepad2.dpad_down) && !robot.winchSwitch.isPressed() && robot.winchAngle.getVoltage() < 3d) {
-                        if (robot.winchMotor.getCurrentPosition() > 3500) {
-                            robot.winchMotor.setTargetPosition(3500); // hang
+                        if (robot.winchMotor.getCurrentPosition() > 3400) {
+                            robot.winchMotor.setTargetPosition(3400); // hang
                             robot.winchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             robot.winchMotor.setPower(1d);
                         } else {

@@ -15,7 +15,7 @@ public class BlueNearBackboard extends AutonomousBase{
     Thread armUp = new Thread() {
         public void run() {
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.liftMotor.setTargetPosition(400);
+            robot.liftMotor.setTargetPosition(450);
             robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             while(robot.liftMotor.isBusy()) {
                 robot.liftMotor.setPower(0.8);
