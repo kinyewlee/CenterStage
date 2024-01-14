@@ -14,6 +14,7 @@ import java.util.List;
 
 public class RBProcessor implements VisionProcessor {
 
+    public boolean add_sat_check = false;
     private static final Paint yellowPaint = new Paint();
     private static final Paint greenPaint = new Paint();
 
@@ -41,18 +42,11 @@ public class RBProcessor implements VisionProcessor {
         return input;
     }
 
-    private boolean isRed(double hueValue) {
-        return (hueValue > 0 && hueValue < 40) || hueValue > 140;
-
-    }
     private double getColorDifference (Scalar color, Scalar color2) {
         double dL = color2.val[0] - color.val[0];
         double da = color2.val[1] - color.val[1];
         double db = color2.val[2] - color.val[2];
         return Math.sqrt(dL * dL + da * da + db * db);
-    }
-    private boolean isBlue(double hueValue) {
-        return hueValue > 80 && hueValue < 160;
     }
 
     public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object input) {
@@ -68,7 +62,7 @@ public class RBProcessor implements VisionProcessor {
         temp.release();
         double firstCircleDifference = getColorDifference(means[0], means[2]);
         double secondCircleDifference = getColorDifference(means[1], means[2]);
-        if (firstCircleDifference > 30) { // add an additional saturation check
+        if (firstCircleDifference > 30 && (!add_sat_check || Math.abs(means[0].val[1]) > 60 || Math.abs(means[0].val[2]) > 60)) {
             if (firstCircleDifference < secondCircleDifference) {
                 canvas.drawCircle((float)circleCenters.get(1).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(1).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
                 position = PixelPosition.Middle;
@@ -77,7 +71,7 @@ public class RBProcessor implements VisionProcessor {
                 position = PixelPosition.Left;
                 canvas.drawCircle((float)circleCenters.get(0).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(0).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
             }
-        } else if (secondCircleDifference > 30) {
+        } else if (secondCircleDifference > 30 && (!add_sat_check || Math.abs(means[1].val[1]) > 60 || Math.abs(means[1].val[2]) > 60)) {
             position = PixelPosition.Middle;
             canvas.drawCircle((float)circleCenters.get(1).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(1).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
         } else {

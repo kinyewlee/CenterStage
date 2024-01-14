@@ -169,13 +169,11 @@ public class RobotDriver {
                 _robot.beep();
                 currentBearing = focusedAprilTag.ftcPose.bearing;
                 currentRange = focusedAprilTag.ftcPose.range;
-                distance = currentRange * Math.asin(currentBearing * Math.PI / 180);
-                if (currentBearing > 0) { // angle is positive (to the left)
-                    distance = -distance - 1.2;
-                } else { // angle is negative (to the right) or zero
-                    distance = distance + 1.2;
-                }
+                distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
             }
+
+            _robot.setDriveTarget(distance, true);
+            _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // start motion.
             _runtime.reset();
@@ -183,13 +181,12 @@ public class RobotDriver {
             // keep looping while we are still active, and BOTH motors are running.
              do {
                  // Set Target and Turn On RUN_TO_POSITION
-                 _robot.setDriveTarget(distance, true);
-                 _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                  // Set the required driving speed  (must be positive for RUN_TO_POSITION)
                  // Start driving straight, and then enter the control loop
                  // To be more precise in our positioning, we scale down the motor speeds if we are close to our destination.
-                 slideSpeed = Math.abs(Math.min(1, 0.4 * Math.sqrt(distance)) * maxSlideSpeed);
+                 slideSpeed = Math.abs(Math.min(1, 0.15 * Math.sqrt(Math.abs(distance))) * maxSlideSpeed);
+                 // slideSpeed = 0.5;
                  // _opMode.idle();
 
                 // Determine required steering to keep on heading
@@ -200,7 +197,7 @@ public class RobotDriver {
                 if (distance < 0)
                     turnSpeed *= -1.0;
 
-                 moveRobot(0, turnSpeed, slideSpeed);
+                 moveRobot(0, 0, slideSpeed);
 
                 // Apply the turning correction to the current driving speed.
                 AprilTagDetection tempAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
@@ -211,18 +208,15 @@ public class RobotDriver {
                      focusedAprilTag = tempAprilTag;
                      currentBearing = focusedAprilTag.ftcPose.bearing;
                      currentRange = focusedAprilTag.ftcPose.range;
-                     distance = currentRange * Math.asin(currentBearing * Math.PI / 180);
-                     if (currentBearing > 0) { // angle is positive (to the left)
-                         distance = -distance - 1.2;
-                     } else { // angle is negative (to the right) or zero
-                         distance = distance + 1.2;
-                     }
+                     distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
+                     _robot.setDriveTarget(distance, true);
+                     _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
                  }
                 // Display drive status for the driver.
                 sendTelemetry(true);
             } while (_opMode.opModeIsActive() &&
                     _runtime.seconds() < timeoutS &&
-                    _robot.isDriveBusy() && distance > 0.3);
+                    _robot.isDriveBusy() && Math.abs(distance) > 0.5);
 
             // Stop all motion;
             moveRobot(0, 0, 0);
@@ -240,6 +234,7 @@ public class RobotDriver {
         // Ensure that the opmode is still active
         if (_opMode.opModeIsActive()) {
             AprilTagDetection focusedAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+            double currentBearing;
             double currentRange;
             double distance;
             double driveSpeed;
@@ -249,8 +244,9 @@ public class RobotDriver {
             }
             else {
                 _robot.beep();
+                currentBearing = focusedAprilTag.ftcPose.bearing;
                 currentRange = focusedAprilTag.ftcPose.range;
-                distance = currentRange - offset;
+                distance = currentRange * Math.acos(currentBearing * Math.PI / 180) - offset;
             }
 
             // reset the timeout time and start motion.
@@ -268,7 +264,7 @@ public class RobotDriver {
                 // Set the required driving speed  (must be positive for RUN_TO_POSITION)
                 // Start driving straight, and then enter the control loop
                 // To be more precise in our positioning, we scale down the motor speeds if we are close to our destination.
-                driveSpeed = Math.abs(Math.min(1, 0.4 * Math.sqrt(distance)) * maxDriveSpeed);
+                driveSpeed = Math.abs(Math.min(1, 0.3 * Math.sqrt(distance)) * maxDriveSpeed);
                 //_opMode.idle();
 
                 // Determine required steering to keep on heading
@@ -292,8 +288,9 @@ public class RobotDriver {
                         _robot.beep();
                     }
                     focusedAprilTag = tempAprilTag;
+                    currentBearing = focusedAprilTag.ftcPose.bearing;
                     currentRange = focusedAprilTag.ftcPose.range;
-                    distance = currentRange - offset;
+                    distance = currentRange * Math.acos(currentBearing * Math.PI / 180) - offset;
                 }
 
                 // Display drive status for the driver.
