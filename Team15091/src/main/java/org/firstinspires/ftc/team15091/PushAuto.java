@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.team15091;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @Autonomous(name = "Push Pixel Only", group = "Testing", preselectTeleOp = "Gamepad")
+@Disabled
 public class PushAuto extends AutonomousBase {
     @Override
     public void runOpMode() throws InterruptedException {

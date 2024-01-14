@@ -3,12 +3,13 @@ package org.firstinspires.ftc.team15091;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
 import java.util.List;
 
 @Autonomous(name = "AprilTagDriveTest", preselectTeleOp = "Gamepad")
+@Disabled
 public class AprilTagDriveTest extends AutonomousBase{
     // arm servo: 0 is out, 0.8 is in
     // bowl servo: 1 is out, 0 is in
