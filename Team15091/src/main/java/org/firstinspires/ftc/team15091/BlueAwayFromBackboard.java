@@ -44,100 +44,121 @@ public class BlueAwayFromBackboard extends AutonomousBase{
             }
         };
         if (initialPos == PixelPosition.Left) {
-            robotDriver.gyroDrive(0.4, 12, 0, 3, null);
-            robotDriver.gyroDrive(0.3, 24, 45, 3, null);
+            autonomousOptions.parkLocationLeft = AutonomousOptions.ParkLocation.RIGHT;
+            autonomousOptions.parkLocationCenter = AutonomousOptions.ParkLocation.RIGHT;
+            autonomousOptions.parkLocationRight = AutonomousOptions.ParkLocation.RIGHT;
+            gyroDriveWithMultiplier(0.4, 12, 0, 3, null);
+            gyroDriveWithMultiplier(0.3, 24, 45, 3, null);
 
-            if (should_park) {
-                robotDriver.gyroDrive(0.4, -10, 45, 3, null); // move backward
-                robotDriver.gyroTurn(0.3, 90, 3);
-                robotDriver.gyroSlide(0.3, -37.5, 90, 5, null);
-                if (should_score) {
+            if (autonomousOptions.pathLocationLeft == AutonomousOptions.PathLocation.STAGEDOOR) {
+                gyroDriveWithMultiplier(0.4, -10, 45, 3, null); // move backward
+                gyroTurnWithMultiplier(0.3, 90, 3);
+                gyroSlideWithMultiplier(0.3, -37.5, 90, 5, null);
+                if (!autonomousOptions.parkOnly) {
                     armUp.start();
-                    robotDriver.gyroDrive(speed_multiplier, 72, 90, 10, null); // move forward
+                    gyroDriveWithMultiplier(1, 72, 90, 10, null); // move forward
                     robotDriver.gyroSlideAprilTag(0.2, 32, 90, 7, aprilTagDetector, 1);
-                    robotDriver.gyroDrive(0.2, 15, 90, 3, null);
+                    gyroDriveWithMultiplier(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();
                     }
                     robot.openBowl();
                     sleep(1000);
-                    robotDriver.gyroDrive(0.4, -5, 90, 3, null);
+                    gyroDriveWithMultiplier(0.4, -5, 90, 3, null);
                     robot.armServo.setPosition(0.8d);
                     robot.closeBowl();
                     sleep(600);
                     armDown.start();
-                    robotDriver.gyroSlide(0.8, -34, 90, 3, null);
-                    robotDriver.gyroDrive(0.7, 22.5, 90, 3, null);
                 }
                 else {
-                    robotDriver.gyroDrive(speed_multiplier, 90, 90, 15, null);
+                    gyroDriveWithMultiplier(1, 90, 90, 15, null);
                 }
+            }
+            if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.LEFT) {
+                gyroSlideWithMultiplier(0.8, 22.5, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
+            }
+            else if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.RIGHT) {
+                gyroSlideWithMultiplier(0.8, -34, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
             }
         }
         else if (initialPos == PixelPosition.Right) {
-            robotDriver.gyroDrive(0.4d, 12d, 0, 3, null);
-            robotDriver.gyroDrive(0.3d, 25d, -45, 3, null);
+            gyroDriveWithMultiplier(0.4d, 12d, 0, 3, null);
+            gyroDriveWithMultiplier(0.3d, 25d, -45, 3, null);
             robot.togglePixelHolder(true); // release pixel
-            if (should_park) {
+            if (autonomousOptions.pathLocationRight == AutonomousOptions.PathLocation.STAGEDOOR) {
                 sleep(500);
-                robotDriver.gyroDrive(0.4, -10, -45, 3, null); // move backward
-                robotDriver.gyroTurn(0.3d, 0, 5); // turn left
-                //robotDriver.gyroSlide(0.3, 4, 0, 3, null);
-                robotDriver.gyroDrive(0.3d, 37.5, 0, 3, null); // drive forward one tile
-                robotDriver.gyroTurn(0.3d, 90, 5); // turn left another 90 deg
-                if (should_score) {
+                gyroDriveWithMultiplier(0.4, -10, -45, 3, null); // move backward
+                gyroTurnWithMultiplier(0.3d, 0, 5); // turn left
+                //gyroSlideWithMultiplier(0.3, 4, 0, 3, null);
+                gyroDriveWithMultiplier(0.3d, 37.5, 0, 3, null); // drive forward one tile
+                gyroTurnWithMultiplier(0.3d, 90, 5); // turn left another 90 deg
+                if (!autonomousOptions.parkOnly) {
                     armUp.start();
-                    robotDriver.gyroDrive(speed_multiplier, 72, 90, 10, null); // move forward
+                    gyroDriveWithMultiplier(1, 72, 90, 10, null); // move forward
                     robotDriver.gyroSlideAprilTag(0.2, 26, 90, 7, aprilTagDetector, 3);
-                    robotDriver.gyroDrive(0.2, 15, 90, 3, null);
+                    gyroDriveWithMultiplier(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();
                     }
                     robot.openBowl();
                     sleep(1000);
-                    robotDriver.gyroDrive(0.4, -5, 90, 3, null);
+                    gyroDriveWithMultiplier(0.4, -5, 90, 3, null);
                     robot.armServo.setPosition(0.8d);
                     robot.closeBowl();
                     sleep(600);
                     armDown.start();
-                    robotDriver.gyroSlide(0.8, -22.5, 90, 3, null);
-                    robotDriver.gyroDrive(0.7, 22.5, 90, 3, null);
                 }
                 else {
-                    robotDriver.gyroDrive(speed_multiplier, 90, 90, 15, null);
+                    gyroDriveWithMultiplier(1, 90, 90, 15, null);
                 }
+            }
+            if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.LEFT) {
+                gyroSlideWithMultiplier(0.8, 34, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
+            }
+            else if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.RIGHT) {
+                gyroSlideWithMultiplier(0.8, -22.5, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
             }
         }
         else { // pixel in the middle position
-            robotDriver.gyroDrive(0.4d, 29.5, 0, 3, null); // move forward 1 1/2 tiles, placing the pixel at the spike mark
+            gyroDriveWithMultiplier(0.4d, 29.5, 0, 3, null); // move forward 1 1/2 tiles, placing the pixel at the spike mark
             robot.togglePixelHolder(true); // release pixel
             sleep(500);
-            if (should_park) {
-                robotDriver.gyroDrive(0.4d, -6, 0, 3, null); // move back, releasing the pixel
-                robotDriver.gyroSlide(0.3d, -20, 0, 3, null); // slide one tile to the right
-                robotDriver.gyroDrive(0.4d, 26, 0, 3, null); // drive one tile forward
-                robotDriver.gyroTurn(0.3d, 90, 5); // turn left
-                if (should_score) {
+            if (autonomousOptions.pathLocationCenter == AutonomousOptions.PathLocation.STAGEDOOR) {
+                gyroDriveWithMultiplier(0.4d, -6, 0, 3, null); // move back, releasing the pixel
+                gyroSlideWithMultiplier(0.3d, -20, 0, 3, null); // slide one tile to the right
+                gyroDriveWithMultiplier(0.4d, 26, 0, 3, null); // drive one tile forward
+                gyroTurnWithMultiplier(0.3d, 90, 5); // turn left
+                if (!autonomousOptions.parkOnly) {
                     armUp.start();
-                    robotDriver.gyroDrive(speed_multiplier, 92, 90, 10, null); // move forward and park
+                    gyroDriveWithMultiplier(1, 92, 90, 10, null); // move forward and park
                     robotDriver.gyroSlideAprilTag(0.2, 26, 90, 7, aprilTagDetector, 2);
-                    robotDriver.gyroDrive(0.2, 15, 90, 3, null);
+                    gyroDriveWithMultiplier(0.2, 15, 90, 3, null);
                     while (armUp.isAlive()) {
                         idle();
                     }
                     robot.openBowl();
                     sleep(1000);
-                    robotDriver.gyroDrive(0.4, -5, 90, 3, null);
+                    gyroDriveWithMultiplier(0.4, -5, 90, 3, null);
                     robot.armServo.setPosition(0.8d);
                     robot.closeBowl();
                     sleep(600);
                     armDown.start();
-                    robotDriver.gyroSlide(0.8, -29, 90, 3, null);
-                    robotDriver.gyroDrive(0.7, 22.5, 90, 3, null);
                 }
                 else {
-                    robotDriver.gyroDrive(speed_multiplier, 120, 90, 15, null);
+                    gyroDriveWithMultiplier(1, 120, 90, 15, null);
                 }
+            }
+            if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.LEFT) {
+                gyroSlideWithMultiplier(0.8, 29, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
+            }
+            else if (autonomousOptions.parkLocationLeft == AutonomousOptions.ParkLocation.RIGHT) {
+                gyroSlideWithMultiplier(0.8, -29, 90, 3, null);
+                gyroDriveWithMultiplier(0.7, 22.5, 90, 3, null);
             }
         }
     }

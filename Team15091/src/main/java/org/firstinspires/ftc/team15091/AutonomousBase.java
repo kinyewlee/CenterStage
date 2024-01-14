@@ -14,15 +14,17 @@ public abstract class AutonomousBase extends OpModeBase {
     protected VisionPortal visionPortal;
     protected AprilTagDetector aprilTagDetector;
     protected RBProcessor rbProcessor;
-    protected long delay_start = 0;
-    public boolean should_park = true;
-    public boolean should_score = true;
-    public double speed_multiplier = 1;
+    public AutonomousOptions autonomousOptions;
+    private boolean setParkLocationMode = false;
+    private PixelPosition setParkPosition;
+    private boolean setPathLocationMode = false;
+    private PixelPosition setPathPosition;
     final protected void setupAndWait() {
         robot.init(hardwareMap);
         robotDriver = new RobotDriver(robot, this);
         aprilTagDetector = new AprilTagDetector();
         rbProcessor = new RBProcessor();
+        autonomousOptions = new AutonomousOptions();
         aprilTagDetector.init();
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
@@ -41,49 +43,62 @@ public abstract class AutonomousBase extends OpModeBase {
                 .addData("distance", "%.1f cm", () -> robot.frontSensor.getDistance(DistanceUnit.CM));
         telemetry.addLine("Arm | ")
                 .addData("pos", "%s", () -> robot.armPosition);
-        telemetry.addLine("Autonomous | ")
-                .addData("will go to park", String.format("%b", should_park));
+        telemetry.addLine("Options |")
+                .addData("park (left)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationLeft))
+                .addData("park (center)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationCenter))
+                .addData("park (right)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationRight))
+                .addData("path (left)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationLeft))
+                .addData("path (center)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationCenter))
+                .addData("path (right)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationRight))
+                .addData("delay", () -> String.format("%d ms", autonomousOptions.delayStartMs));
 
         // Wait for the game to start (driver presses PLAY)
         // Abort this loop is started or stopped.
         while (!(isStarted() || isStopRequested())) {
-
             if (gamepad1.dpad_up || gamepad2.dpad_up) {
                 if (!dpad_pressed) {
                     dpad_pressed = true;
-                    delay_start += 100;
-                    telemetry.addLine("Variables | ")
-                            .addData("Delay ms:", String.format("%d", delay_start));
-                }
-            } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
-                if (!dpad_pressed) {
-                    dpad_pressed = true;
-                    if (delay_start > 0) {
-                        delay_start -= 100;
-                        telemetry.addLine("Variables | ")
-                                .addData("Delay ms:", String.format("%d", delay_start));
+                    if (setParkLocationMode) {
+                        setParkPosition = PixelPosition.Middle;
+                    }
+                    else if (setPathLocationMode) {
+                        setPathPosition = PixelPosition.Middle;
                     }
                 }
             }
-
+            else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+                if (!dpad_pressed) {
+                    dpad_pressed = true;
+                    if (setParkLocationMode) {
+                        setParkPosition = PixelPosition.All;
+                    }
+                    else if (setPathLocationMode) {
+                        setPathPosition = PixelPosition.All;
+                    }
+                }
+            }
             else if (gamepad1.dpad_left || gamepad2.dpad_left) {
                 if (!dpad_pressed) {
                     dpad_pressed = true;
-                    speed_multiplier = Math.max(0, speed_multiplier - 0.1);
-                    telemetry.addLine("Variables | ")
-                            .addData("Forward speed:", String.format("%.2f", speed_multiplier));
+                    if (setParkLocationMode) {
+                        setParkPosition = PixelPosition.Left;
+                    }
+                    else if (setPathLocationMode) {
+                        setPathPosition = PixelPosition.Left;
+                    }
                 }
             }
-
             else if (gamepad1.dpad_right || gamepad2.dpad_right) {
                 if (!dpad_pressed) {
                     dpad_pressed = true;
-                    speed_multiplier = Math.min(1, speed_multiplier + 0.1);
-                    telemetry.addLine("Variables | ")
-                            .addData("Forward speed:", String.format("%.2f", speed_multiplier));
+                    if (setParkLocationMode) {
+                        setParkPosition = PixelPosition.Right;
+                    }
+                    else if (setPathLocationMode) {
+                        setPathPosition = PixelPosition.Right;
+                    }
                 }
             }
-
             else {
                 dpad_pressed = false;
             }
@@ -91,10 +106,16 @@ public abstract class AutonomousBase extends OpModeBase {
             if (gamepad1.x) {
                 if (!x_pressed) {
                     x_pressed = true;
-                    should_park = !should_park;
-                    telemetry.addLine("Autonomous | ")
-                            .addData("will go to park", String.format("%b", should_park));
-                    telemetry.update();
+                    if (setParkLocationMode && setParkPosition != null) {
+                        setParkLocationMode = false;
+                        autonomousOptions.setParkLocation(setParkPosition, AutonomousOptions.ParkLocation.LEFT);
+                        setParkPosition = null;
+                    }
+                    else if (setPathLocationMode && setPathPosition != null) {
+                        setPathLocationMode = false;
+                        autonomousOptions.setPathLocation(setPathPosition, AutonomousOptions.PathLocation.WALL);
+                        setPathPosition = null;
+                    }
                 }
             } else {
                 x_pressed = false;
@@ -103,10 +124,11 @@ public abstract class AutonomousBase extends OpModeBase {
             if (gamepad1.y) {
                 if (!y_pressed) {
                     y_pressed = true;
-                    should_score = !should_score;
-                    telemetry.addLine("Autonomous | ")
-                            .addData("will go to score", String.format("%b", should_score));
-                    telemetry.update();
+                    if (setPathLocationMode && setPathPosition != null) {
+                        setPathLocationMode = false;
+                        autonomousOptions.setPathLocation(setPathPosition, AutonomousOptions.PathLocation.STAGEDOOR);
+                        setPathPosition = null;
+                    }
                 }
             } else {
                 y_pressed = false;
@@ -115,22 +137,129 @@ public abstract class AutonomousBase extends OpModeBase {
             if (gamepad1.a) {
                 if (!a_pressed) {
                     a_pressed = true;
-                    rbProcessor.add_sat_check = !rbProcessor.add_sat_check;
-                    telemetry.addLine("Autonomous | ")
-                            .addData("sat check", String.format("%b", rbProcessor.add_sat_check));
-                    telemetry.update();
+                    if (setParkLocationMode && setParkPosition != null) {
+                        setParkLocationMode = false;
+                        autonomousOptions.setParkLocation(setParkPosition, AutonomousOptions.ParkLocation.NONE);
+                        setParkPosition = null;
+                    }
+                    else if (setPathLocationMode && setPathPosition != null) {
+                        setPathLocationMode = false;
+                        autonomousOptions.setPathLocation(setPathPosition, AutonomousOptions.PathLocation.NONE);
+                        setPathPosition = null;
+                    }
                 }
             } else {
                 a_pressed = false;
             }
 
+            if (gamepad1.b) {
+                if (!a_pressed) {
+                    b_pressed = true;
+                    if (setParkLocationMode && setParkPosition != null) {
+                        setParkLocationMode = false;
+                        autonomousOptions.setParkLocation(setParkPosition, AutonomousOptions.ParkLocation.RIGHT);
+                        setParkPosition = null;
+                    }
+                }
+            } else {
+                b_pressed = false;
+            }
+
+            if (gamepad1.left_trigger > 0.1) {
+                autonomousOptions.delayStartMs -= gamepad1.left_trigger * 10;
+            }
+            if (gamepad1.right_trigger > 0.1) {
+                autonomousOptions.delayStartMs += gamepad1.right_trigger * 10;
+            }
+
+            if (gamepad1.left_bumper) {
+                if (!lb_pressed) {
+                    lb_pressed = true;
+                    setParkLocationMode = !setParkLocationMode;
+                    setParkPosition = null;
+                    setPathLocationMode = false;
+                }
+            } else {
+                lb_pressed = false;
+            }
+            if (gamepad1.right_bumper) {
+                if (!rb_pressed) {
+                    rb_pressed = true;
+                    setPathLocationMode = !setPathLocationMode;
+                    setPathPosition = null;
+                    setParkLocationMode = false;
+                }
+            } else {
+                rb_pressed = false;
+            }
+
             pixelPos = rbProcessor.position;
             telemetry.update();
+            if (setParkLocationMode) {
+                telemetry.addLine();
+                if (setParkPosition == null) {
+                    telemetry.addLine("Setting park position for:");
+                    telemetry.addLine("D-Pad Left: Left");
+                    telemetry.addLine("D-Pad Up: Center");
+                    telemetry.addLine("D-Pad Right: Right");
+                    telemetry.addLine("D-Pad Down: All");
+                    telemetry.addLine("LB: cancel");
+                }
+                else {
+                    telemetry.addLine("Setting park position for " + setParkPosition.toString());
+                    telemetry.addLine("X: park left");
+                    telemetry.addLine("B: park right");
+                    telemetry.addLine("A: do not park");
+                    telemetry.addLine("LB: cancel");
+                }
+            }
+            else if (setPathLocationMode) {
+                telemetry.addLine();
+                if (setParkPosition == null) {
+                    telemetry.addLine("Setting path position for:");
+                    telemetry.addLine("D-Pad Left: Left");
+                    telemetry.addLine("D-Pad Up: Center");
+                    telemetry.addLine("D-Pad Right: Right");
+                    telemetry.addLine("D-Pad Down: All");
+                    telemetry.addLine("RB: cancel");
+                }
+                else {
+                    telemetry.addLine("Setting path position for " + setPathPosition.toString());
+                    telemetry.addLine("X: first truss");
+                    telemetry.addLine("Y: stage door");
+                    telemetry.addLine("A: do not path");
+                    telemetry.addLine("RB: cancel");
+                }
+            }
+            else {
+                telemetry.addLine("LB: set park position");
+                telemetry.addLine("RB: set path position");
+                telemetry.addLine("LT: decrease starting delay");
+                telemetry.addLine("RT: increase starting delay");
+            }
             idle();
         }
 
-        if (delay_start > 0d) {
-            sleep(delay_start);
+        if (autonomousOptions.delayStartMs > 0d) {
+            sleep(autonomousOptions.delayStartMs);
         }
+    }
+
+    final protected void gyroDriveWithMultiplier(double maxDriveSpeed,
+                                                 double distance,
+                                                 double heading,
+                                                 double timeoutS,
+                                                 IObjectDetector<Boolean> objectDetector) {
+        robotDriver.gyroDrive(Math.min(1, maxDriveSpeed * autonomousOptions.speedMultiplier), distance, heading, timeoutS, objectDetector);
+    }
+    final protected void gyroSlideWithMultiplier(double maxSlideSpeed,
+                                                 double distance,
+                                                 double heading,
+                                                 double timeoutS,
+                                                 IObjectDetector<Boolean> objectDetector) {
+        robotDriver.gyroSlide(Math.min(1, maxSlideSpeed * autonomousOptions.speedMultiplier), distance, heading, timeoutS, objectDetector);
+    }
+    final protected void gyroTurnWithMultiplier(double maxTurnSpeed, double heading, double timeoutS) {
+        robotDriver.gyroTurn(Math.min(1, maxTurnSpeed * autonomousOptions.speedMultiplier), heading, timeoutS);
     }
 }

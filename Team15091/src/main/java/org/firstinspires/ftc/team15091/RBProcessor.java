@@ -13,8 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RBProcessor implements VisionProcessor {
-
-    public boolean add_sat_check = false;
     private static final Paint yellowPaint = new Paint();
     private static final Paint greenPaint = new Paint();
 
@@ -62,7 +60,7 @@ public class RBProcessor implements VisionProcessor {
         temp.release();
         double firstCircleDifference = getColorDifference(means[0], means[2]);
         double secondCircleDifference = getColorDifference(means[1], means[2]);
-        if (firstCircleDifference > 30 && (!add_sat_check || Math.abs(means[0].val[1]) > 60 || Math.abs(means[0].val[2]) > 60)) {
+        if (firstCircleDifference > 30) {
             if (firstCircleDifference < secondCircleDifference) {
                 canvas.drawCircle((float)circleCenters.get(1).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(1).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
                 position = PixelPosition.Middle;
@@ -71,7 +69,7 @@ public class RBProcessor implements VisionProcessor {
                 position = PixelPosition.Left;
                 canvas.drawCircle((float)circleCenters.get(0).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(0).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
             }
-        } else if (secondCircleDifference > 30 && (!add_sat_check || Math.abs(means[1].val[1]) > 60 || Math.abs(means[1].val[2]) > 60)) {
+        } else if (secondCircleDifference > 30) {
             position = PixelPosition.Middle;
             canvas.drawCircle((float)circleCenters.get(1).x * scaleBmpPxToCanvasPx, (float)circleCenters.get(1).y * scaleBmpPxToCanvasPx, radius * scaleBmpPxToCanvasPx, greenPaint);
         } else {
