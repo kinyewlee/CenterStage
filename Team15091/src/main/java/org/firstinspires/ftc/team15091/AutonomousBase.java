@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.team15091;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -14,17 +16,17 @@ public abstract class AutonomousBase extends OpModeBase {
     protected VisionPortal visionPortal;
     protected AprilTagDetector aprilTagDetector;
     protected RBProcessor rbProcessor;
-    public AutonomousOptions autonomousOptions;
+    public AutonomousOptions autonomousOptions = new AutonomousOptions();;
     private boolean setParkLocationMode = false;
     private PixelPosition setParkPosition;
     private boolean setPathLocationMode = false;
     private PixelPosition setPathPosition;
+    long delayInputTimer = 0;
     final protected void setupAndWait() {
         robot.init(hardwareMap);
         robotDriver = new RobotDriver(robot, this);
         aprilTagDetector = new AprilTagDetector();
         rbProcessor = new RBProcessor();
-        autonomousOptions = new AutonomousOptions();
         aprilTagDetector.init();
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
@@ -43,7 +45,7 @@ public abstract class AutonomousBase extends OpModeBase {
                 .addData("distance", "%.1f cm", () -> robot.frontSensor.getDistance(DistanceUnit.CM));
         telemetry.addLine("Arm | ")
                 .addData("pos", "%s", () -> robot.armPosition);
-        telemetry.addLine("Options |")
+        telemetry.addLine("Options | ")
                 .addData("park (left)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationLeft))
                 .addData("park (center)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationCenter))
                 .addData("park (right)", () -> TelemetryHelper.parkLocationAsString(autonomousOptions.parkLocationRight))
@@ -166,10 +168,17 @@ public abstract class AutonomousBase extends OpModeBase {
             }
 
             if (gamepad1.left_trigger > 0.1) {
-                autonomousOptions.delayStartMs -= gamepad1.left_trigger * 10;
+                if (System.currentTimeMillis() - delayInputTimer > 10) {
+                    delayInputTimer = System.currentTimeMillis();
+                    autonomousOptions.delayStartMs -= Math.floor(gamepad1.left_trigger * 10);
+                    if (autonomousOptions.delayStartMs < 0) autonomousOptions.delayStartMs = 0;
+                }
             }
             if (gamepad1.right_trigger > 0.1) {
-                autonomousOptions.delayStartMs += gamepad1.right_trigger * 10;
+                if (System.currentTimeMillis() - delayInputTimer > 10) {
+                    delayInputTimer = System.currentTimeMillis();
+                    autonomousOptions.delayStartMs += Math.floor(gamepad1.right_trigger * 10);
+                }
             }
 
             if (gamepad1.left_bumper) {

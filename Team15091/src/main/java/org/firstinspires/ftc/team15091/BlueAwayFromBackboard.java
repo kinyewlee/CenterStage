@@ -10,6 +10,7 @@ public class BlueAwayFromBackboard extends AutonomousBase{
     @Override
     public void runOpMode() throws InterruptedException {
         setupAndWait();
+        if (!opModeIsActive()) return;
         DistanceDetector frontDistance = new DistanceDetector((DistanceSensor)(hardwareMap.get("sensor_front")), 10, false);
         PixelPosition initialPos = rbProcessor.position;
         Thread armUp = new Thread() {

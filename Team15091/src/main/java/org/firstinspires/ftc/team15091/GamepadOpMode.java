@@ -24,7 +24,7 @@ public class GamepadOpMode extends OpModeBase {
         boolean raisingInProgress = false;
         long liftStartTime = System.currentTimeMillis();
         int droneSequence = 0;
-        double driveScale = 0.6;
+        double driveScale = 0.5;
         int runToArmPosition = 500;
         int yPressCount = 0;
 
@@ -270,14 +270,14 @@ public class GamepadOpMode extends OpModeBase {
                 drive = leftStickY + rightStickY;
             }
 
-            if (Math.abs(drive) > 0.5) {
+            if (Math.abs(drive) > 0.6) {
                 // Adjust driveScale or perform other actions as needed
                 if (driveScale < 1.0) {
                     driveScale += 0.01; // Adjust the increment value as needed
                 }
             } else {
                 // Reset driveScale or perform other actions as needed when |drive| is not greater than 0.5
-                driveScale = 0.6;
+                driveScale = 0.5;
             }
             // Apply the scaling factor (0.6 in this case):
             drive *= driveScale;

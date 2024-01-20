@@ -12,6 +12,7 @@ public class RedAwayFromBackboard extends AutonomousBase {
         autonomousOptions.parkLocationCenter = AutonomousOptions.ParkLocation.LEFT;
         autonomousOptions.parkLocationRight = AutonomousOptions.ParkLocation.LEFT;
         setupAndWait();
+        if (!opModeIsActive()) return;
         DistanceDetector frontDistance = new DistanceDetector((DistanceSensor)(hardwareMap.get("sensor_front")), 10, false);
         PixelPosition initialPos = rbProcessor.position;
         Thread armUp = new Thread() {

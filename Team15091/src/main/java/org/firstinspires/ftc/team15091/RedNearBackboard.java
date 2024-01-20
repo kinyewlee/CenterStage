@@ -47,6 +47,7 @@ public class RedNearBackboard extends AutonomousBase {
         autonomousOptions.parkLocationCenter = AutonomousOptions.ParkLocation.RIGHT;
         autonomousOptions.parkLocationRight = AutonomousOptions.ParkLocation.RIGHT;
         setupAndWait();
+        if (!opModeIsActive()) return;
         DistanceDetector frontDistance = new DistanceDetector((DistanceSensor) (hardwareMap.get("sensor_front")), 7, false);
         PixelPosition initialPos = rbProcessor.position;
         robot.setArmPosition(0.7);
