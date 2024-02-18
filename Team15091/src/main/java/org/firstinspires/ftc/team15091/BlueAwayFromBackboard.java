@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 public class BlueAwayFromBackboard extends AutonomousBase{
     @Override
     public void runOpMode() throws InterruptedException {
+        autonomousOptions.parkLocationLeft = AutonomousOptions.ParkLocation.RIGHT;
+        autonomousOptions.parkLocationCenter = AutonomousOptions.ParkLocation.RIGHT;
+        autonomousOptions.parkLocationRight = AutonomousOptions.ParkLocation.RIGHT;
         setupAndWait();
         if (!opModeIsActive()) return;
         DistanceDetector frontDistance = new DistanceDetector((DistanceSensor)(hardwareMap.get("sensor_front")), 10, false);
@@ -45,9 +48,6 @@ public class BlueAwayFromBackboard extends AutonomousBase{
             }
         };
         if (initialPos == PixelPosition.Left) {
-            autonomousOptions.parkLocationLeft = AutonomousOptions.ParkLocation.RIGHT;
-            autonomousOptions.parkLocationCenter = AutonomousOptions.ParkLocation.RIGHT;
-            autonomousOptions.parkLocationRight = AutonomousOptions.ParkLocation.RIGHT;
             gyroDriveWithMultiplier(0.4, 12, 0, 3, null);
             gyroDriveWithMultiplier(0.3, 24, 45, 3, null);
 
@@ -87,7 +87,6 @@ public class BlueAwayFromBackboard extends AutonomousBase{
         else if (initialPos == PixelPosition.Right) {
             gyroDriveWithMultiplier(0.4d, 12d, 0, 3, null);
             gyroDriveWithMultiplier(0.3d, 25d, -45, 3, null);
-            robot.togglePixelHolder(true); // release pixel
             if (autonomousOptions.pathLocationRight == AutonomousOptions.PathLocation.STAGEDOOR) {
                 sleep(500);
                 gyroDriveWithMultiplier(0.4, -10, -45, 3, null); // move backward
@@ -126,7 +125,6 @@ public class BlueAwayFromBackboard extends AutonomousBase{
         }
         else { // pixel in the middle position
             gyroDriveWithMultiplier(0.4d, 29.5, 0, 3, null); // move forward 1 1/2 tiles, placing the pixel at the spike mark
-            robot.togglePixelHolder(true); // release pixel
             sleep(500);
             if (autonomousOptions.pathLocationCenter == AutonomousOptions.PathLocation.STAGEDOOR) {
                 gyroDriveWithMultiplier(0.4d, -6, 0, 3, null); // move back, releasing the pixel

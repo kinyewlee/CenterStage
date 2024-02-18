@@ -86,7 +86,6 @@ public class RedAwayFromBackboard extends AutonomousBase {
         else if (initialPos == PixelPosition.Left) {
             gyroDriveWithMultiplier(0.4d, 12d, 0, 3, null);
             gyroDriveWithMultiplier(0.3d, 25d, 45, 3, null);
-            robot.togglePixelHolder(true); // release pixel
             if (autonomousOptions.pathLocationLeft == AutonomousOptions.PathLocation.STAGEDOOR) {
                 sleep(500);
                 gyroDriveWithMultiplier(0.4, -10, 45, 3, null); // move backward
@@ -124,7 +123,6 @@ public class RedAwayFromBackboard extends AutonomousBase {
         }
         else { // pixel in the middle position
             gyroDriveWithMultiplier(0.4d, 29.5, 0, 3, null); // move forward 1 1/2 tiles, placing the pixel at the spike mark
-            robot.togglePixelHolder(true); // release pixel
             sleep(500);
             if (autonomousOptions.pathLocationCenter == AutonomousOptions.PathLocation.STAGEDOOR) {
                 gyroDriveWithMultiplier(0.4d, -6, 0, 3, null); // move back, releasing the pixel

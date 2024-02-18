@@ -16,7 +16,6 @@ public abstract class AutonomousBase extends OpModeBase {
     protected VisionPortal visionPortal;
     protected AprilTagDetector aprilTagDetector;
     protected RBProcessor rbProcessor;
-    protected YellowProcessor yellowProcessor;
     public AutonomousOptions autonomousOptions = new AutonomousOptions();;
     private boolean setParkLocationMode = false;
     private PixelPosition setParkPosition;
@@ -28,17 +27,12 @@ public abstract class AutonomousBase extends OpModeBase {
         robotDriver = new RobotDriver(robot, this);
         aprilTagDetector = new AprilTagDetector();
         rbProcessor = new RBProcessor();
-        yellowProcessor = new YellowProcessor();
         aprilTagDetector.init();
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(aprilTagDetector.aprilTag)
                 .addProcessor(rbProcessor)
-                .addProcessor(yellowProcessor)
                 .build();
-
-        // visionPortal.setProcessorEnabled(aprilTagDetector.aprilTag, false);
-        visionPortal.setProcessorEnabled(yellowProcessor, false);
 
         telemetry.addData("Heading", "%.4f", () -> robot.getHeading());
         if (Math.abs(robot.getHeading()) > 20) {
@@ -58,8 +52,7 @@ public abstract class AutonomousBase extends OpModeBase {
                 .addData("path (left)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationLeft))
                 .addData("path (center)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationCenter))
                 .addData("path (right)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationRight))
-                .addData("delay", () -> String.format("%d ms", autonomousOptions.delayStartMs))
-                .addData("score yellow pixel", () -> String.format("%b", autonomousOptions.parkOnly));
+                .addData("delay", () -> String.format("%d ms", autonomousOptions.delayStartMs));
 
         // Wait for the game to start (driver presses PLAY)
         // Abort this loop is started or stopped.
@@ -133,7 +126,11 @@ public abstract class AutonomousBase extends OpModeBase {
             if (gamepad1.y) {
                 if (!y_pressed) {
                     y_pressed = true;
-                    autonomousOptions.parkOnly = !autonomousOptions.parkOnly;
+                    if (setPathLocationMode && setPathPosition != null) {
+                        setPathLocationMode = false;
+                        autonomousOptions.setPathLocation(setPathPosition, AutonomousOptions.PathLocation.STAGEDOOR);
+                        setPathPosition = null;
+                    }
                 }
             } else {
                 y_pressed = false;
@@ -164,11 +161,6 @@ public abstract class AutonomousBase extends OpModeBase {
                         setParkLocationMode = false;
                         autonomousOptions.setParkLocation(setParkPosition, AutonomousOptions.ParkLocation.RIGHT);
                         setParkPosition = null;
-                    }
-                    else if (setPathLocationMode && setPathPosition != null) {
-                        setPathLocationMode = false;
-                        autonomousOptions.setPathLocation(setPathPosition, AutonomousOptions.PathLocation.STAGEDOOR);
-                        setPathPosition = null;
                     }
                 }
             } else {
@@ -232,7 +224,7 @@ public abstract class AutonomousBase extends OpModeBase {
             }
             else if (setPathLocationMode) {
                 telemetry.addLine();
-                if (setPathPosition == null) {
+                if (setParkPosition == null) {
                     telemetry.addLine("Setting path position for:");
                     telemetry.addLine("D-Pad Left: Left");
                     telemetry.addLine("D-Pad Up: Center");
@@ -242,8 +234,8 @@ public abstract class AutonomousBase extends OpModeBase {
                 }
                 else {
                     telemetry.addLine("Setting path position for " + setPathPosition.toString());
-                    telemetry.addLine("X: near wall");
-                    telemetry.addLine("B: stage door");
+                    telemetry.addLine("X: first truss");
+                    telemetry.addLine("Y: stage door");
                     telemetry.addLine("A: do not path");
                     telemetry.addLine("RB: cancel");
                 }
@@ -253,7 +245,6 @@ public abstract class AutonomousBase extends OpModeBase {
                 telemetry.addLine("RB: set path position");
                 telemetry.addLine("LT: decrease starting delay");
                 telemetry.addLine("RT: increase starting delay");
-                telemetry.addLine("Y: toggle yellow pixel score");
             }
             idle();
         }

@@ -43,8 +43,8 @@ public class Robot {
     SoundPlayer.PlaySoundParams soundParams = new SoundPlayer.PlaySoundParams(false);
 
     // Initialize variables for filtering
-    private volatile double filteredDistance = 0.0;
-    private double alpha = 0.2; // Adjust this value based on your needs
+    private double filteredDistance = 0.0;
+    double alpha = 0.2; // Adjust this value based on your needs
 
     IMU imu;
     private static final double MAX_VELOCITY = 2800d;
@@ -55,7 +55,7 @@ public class Robot {
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
     private RunMode liftMode;
     double armPosition, bowlPosition;
-    private static final double BOWL_CLOSE_POSITION = 0.58d;
+    private static final double BOWL_CLOSE_POSITION = 0.6d;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -244,11 +244,7 @@ public class Robot {
     }
 
     public void openBowl() {
-        setBowlPosition(0.4d); // open
-    }
-
-    public void togglePixelHolder(boolean release) {
-
+        setBowlPosition(0.45d); // open
     }
 
     double getFilteredDistance() {
