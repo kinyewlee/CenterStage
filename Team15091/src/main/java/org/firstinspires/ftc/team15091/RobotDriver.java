@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.List;
+
 public class RobotDriver {
     private Robot _robot;
 
@@ -157,19 +159,29 @@ public class RobotDriver {
                                              AprilTagDetector aprilTagDetector,
                                              int aprilTagId) {
         if (_opMode.opModeIsActive()) {
-            AprilTagDetection focusedAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
+            List<AprilTagDetection> aprilTags = aprilTagDetector.scanForAprilTags();
+            AprilTagDetection focusedAprilTag = null;
             double currentBearing;
             double currentRange;
+            double currentYaw;
+            double correctAngle;
             double distance;
             double slideSpeed;
+            for (AprilTagDetection currentAprilTag : aprilTags) {
+                focusedAprilTag = currentAprilTag;
+                if (currentAprilTag.id == aprilTagId) break;
+            }
             if (focusedAprilTag == null) {
                 distance = maxDistance;
+                correctAngle = _robot.getHeading();
             }
             else {
                 _robot.beep();
                 currentBearing = focusedAprilTag.ftcPose.bearing;
                 currentRange = focusedAprilTag.ftcPose.range;
-                distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
+                currentYaw = focusedAprilTag.ftcPose.yaw;
+                correctAngle = _robot.getHeading() - currentYaw;
+                distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5 + ((focusedAprilTag.id - aprilTagId) * 6);
             }
 
             _robot.setDriveTarget(distance, true);
@@ -190,27 +202,37 @@ public class RobotDriver {
                  // _opMode.idle();
 
                 // Determine required steering to keep on heading
-                 //TODO: is it possible to use the yaw of the April Tag for heading instead of the IMU?
-                turnSpeed = getSteeringCorrection(heading, P_DRIVE_GAIN, slideSpeed);
+                turnSpeed = getSteeringCorrection(correctAngle, P_DRIVE_GAIN, slideSpeed);
 
                 // if driving in reverse, the motor correction also needs to be reversed
                 if (distance < 0)
                     turnSpeed *= -1.0;
 
-                 moveRobot(0, 0, slideSpeed);
+                 moveRobot(0, turnSpeed, slideSpeed);
 
                 // Apply the turning correction to the current driving speed.
-                AprilTagDetection tempAprilTag = aprilTagDetector.scanForAprilTagById(aprilTagId);
-                 if (tempAprilTag != null) { // the april tag was detected; update with the new info
-                     if (focusedAprilTag == null) {
-                         _robot.beep();
+                 aprilTags = aprilTagDetector.scanForAprilTags();
+                 AprilTagDetection tempAprilTag = null;
+                 for (AprilTagDetection currentAprilTag : aprilTags) {
+                     tempAprilTag = currentAprilTag;
+                     if (currentAprilTag.id == aprilTagId) break;
+                 }
+                 if (tempAprilTag != null) { // an april tag was detected; update with the new info
+                     if (focusedAprilTag == null || focusedAprilTag.id != aprilTagId || tempAprilTag.id == aprilTagId) { // avoid replacing a "correct id" detection with an incorrect one
+                         if (focusedAprilTag == null) {
+                             _robot.beep();
+                         }
+                         focusedAprilTag = tempAprilTag;
+                         currentBearing = focusedAprilTag.ftcPose.bearing;
+                         currentRange = focusedAprilTag.ftcPose.range;
+                         currentYaw = focusedAprilTag.ftcPose.yaw;
+                         if (Math.abs(correctAngle - (_robot.getHeading() - currentYaw)) > 1) { // only adjust angle if it is significantly off (greater than 1 degree)
+                             correctAngle = _robot.getHeading() - currentYaw;
+                         }
+                         distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5 + ((focusedAprilTag.id - aprilTagId) * 6);
+                         _robot.setDriveTarget(distance, true);
+                         _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
                      }
-                     focusedAprilTag = tempAprilTag;
-                     currentBearing = focusedAprilTag.ftcPose.bearing;
-                     currentRange = focusedAprilTag.ftcPose.range;
-                     distance = currentRange * Math.sin(currentBearing * Math.PI / 180) + 2.5;
-                     _robot.setDriveTarget(distance, true);
-                     _robot.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
                  }
                 // Display drive status for the driver.
                 sendTelemetry(true);
