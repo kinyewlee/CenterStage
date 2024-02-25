@@ -28,11 +28,13 @@ public abstract class AutonomousBase extends OpModeBase {
         robotDriver = new RobotDriver(robot, this);
         aprilTagDetector = new AprilTagDetector();
         rbProcessor = new RBProcessor();
+        yellowProcessor = new YellowProcessor();
         aprilTagDetector.init();
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(aprilTagDetector.aprilTag)
                 .addProcessor(rbProcessor)
+                .addProcessor(yellowProcessor)
                 .build();
 
         telemetry.addData("Heading", "%.4f", () -> robot.getHeading());
