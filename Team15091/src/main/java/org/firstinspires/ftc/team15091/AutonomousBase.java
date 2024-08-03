@@ -16,6 +16,7 @@ public abstract class AutonomousBase extends OpModeBase {
     protected VisionPortal visionPortal;
     protected AprilTagDetector aprilTagDetector;
     protected RBProcessor rbProcessor;
+    protected YellowProcessor yellowProcessor;
     public AutonomousOptions autonomousOptions = new AutonomousOptions();;
     private boolean setParkLocationMode = false;
     private PixelPosition setParkPosition;
@@ -52,7 +53,8 @@ public abstract class AutonomousBase extends OpModeBase {
                 .addData("path (left)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationLeft))
                 .addData("path (center)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationCenter))
                 .addData("path (right)", () -> TelemetryHelper.pathLocationAsString(autonomousOptions.pathLocationRight))
-                .addData("delay", () -> String.format("%d ms", autonomousOptions.delayStartMs));
+                .addData("delay", () -> String.format("%d ms", autonomousOptions.delayStartMs))
+                .addData("score yellow pixel", () -> String.format("%b", autonomousOptions.parkOnly));
 
         // Wait for the game to start (driver presses PLAY)
         // Abort this loop is started or stopped.

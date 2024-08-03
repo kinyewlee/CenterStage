@@ -227,7 +227,7 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.dpad_left || gamepad2.dpad_left) {
                 if (!dpadLeftRightPressed) {
                     dpadLeftRightPressed = true;
-                    robot.railServo.setPosition(0.4);
+                    robot.railServo.setPosition(0.36d);
                     robot.droneServo.setPosition(0);
                     droneSequence = 0;
                 }
@@ -284,7 +284,7 @@ public class GamepadOpMode extends OpModeBase {
             drive *= driveScale;
 
             double turn = getDriverGamepad().left_stick_x * 0.7d;
-            double side = getDriverGamepad().right_stick_x * 0.9d;
+            double side = getDriverGamepad().right_stick_x;
 
             double leftFrontPower = drive + turn + side;
             double leftBackPower = drive + turn - side;
