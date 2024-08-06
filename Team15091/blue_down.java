@@ -1,1 +1,0 @@
-@Autonomous(name = "Example", preselectTeleOp = "Gamepad")
