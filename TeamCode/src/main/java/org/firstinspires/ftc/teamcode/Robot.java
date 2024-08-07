@@ -41,8 +41,8 @@ public class Robot {
 
     IMU imu;
     private static final double MAX_VELOCITY = 2800d;
-    private static final double COUNTS_PER_MOTOR_REV = 529.2d;    // eg: HD Hex Motor 20:1 560, core hex 288, 40:1 1120
-    private static final double DRIVE_GEAR_REDUCTION = 1.6d;     // This is < 1.0 if geared UP, eg. 26d/10d
+    private static final double COUNTS_PER_MOTOR_REV = 1120d;    // eg: HD Hex Motor 20:1 560, core hex 288, 40:1 1120
+    private static final double DRIVE_GEAR_REDUCTION = 0.67d;     // This is < 1.0 if geared UP, eg. 26d/10d
     private static final double WHEEL_DIAMETER_INCHES = 2.953d;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
@@ -62,6 +62,8 @@ public class Robot {
 
         intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
         intake_motor.setDirection(Direction.REVERSE);
+
+        intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
 
         armServo = hardwareMap.servo.get("servo_arm");
         armPosition = armServo.getPosition();

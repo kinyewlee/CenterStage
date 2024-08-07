@@ -48,6 +48,7 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.left_bumper || gamepad2.left_bumper) {
                 if (!lb_pressed) {
                     lb_pressed = true;
+                    robot.intake_motor.setPower(-1.0);
                 }
             } else {
                 lb_pressed = false;
