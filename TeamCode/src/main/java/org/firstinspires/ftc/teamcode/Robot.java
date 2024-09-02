@@ -28,16 +28,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Robot {
-    public DcMotorEx leftFront, leftRear, rightRear, rightFront, intake_motor;
-    public Servo armServo;
+    public DcMotorEx leftFront, leftRear, rightRear, rightFront, liftMotor;
+    public Servo gripServo, handServo;
+    public DigitalChannel limitSwitch;
     private List<DcMotorEx> motors;
     private Context _appContext;
     private int[] beepSoundID = new int[3];
     volatile boolean soundPlaying = false;
     // create a sound parameter that holds the desired player parameters.
     SoundPlayer.PlaySoundParams soundParams = new SoundPlayer.PlaySoundParams(false);
-
-    boolean intake_running;
 
     IMU imu;
     private static final double MAX_VELOCITY = 2800d;
@@ -46,7 +45,8 @@ public class Robot {
     private static final double WHEEL_DIAMETER_INCHES = 2.953d;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
-    double armPosition;
+    double gripPosition, handPosition;
+    int handMode;
 
     public void init(HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -60,13 +60,17 @@ public class Robot {
         rightFront.setDirection(Direction.FORWARD);
         rightRear.setDirection(Direction.FORWARD);
 
-        intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
-        intake_motor.setDirection(Direction.REVERSE);
+        liftMotor = hardwareMap.get(DcMotorEx.class, "lift");
+        liftMotor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
+        liftMotor.setDirection(Direction.FORWARD);
 
-        intake_motor = hardwareMap.get(DcMotorEx.class, "intake_motor");
+        limitSwitch = hardwareMap.get(DigitalChannel.class, "limit");
 
-        armServo = hardwareMap.servo.get("servo_arm");
-        armPosition = armServo.getPosition();
+        gripServo = hardwareMap.servo.get("grip");
+        gripPosition = gripServo.getPosition();
+
+        handServo = hardwareMap.servo.get("hand");
+        handPosition = gripServo.getPosition();
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
@@ -166,29 +170,53 @@ public class Robot {
                 rightFront.isBusy() && rightRear.isBusy();
     }
 
-    public void setArmPosition(double newArmPosition) {
-        if (armPosition != newArmPosition) {
-            armPosition = newArmPosition;
-            armServo.setPosition(armPosition);
+    public void setGripPosition(double newGripPosition) {
+        if (gripPosition != newGripPosition) {
+            gripPosition = newGripPosition;
+            gripServo.setPosition(gripPosition);
         }
     }
 
-    public void toggleArm() {
-        if (armPosition == (1.0)){
-            setArmPosition(0d);
+    public void toggleGrip() {
+        if (gripPosition == 0.9d) {
+            setGripPosition(0.5d);
         } else {
-            setArmPosition(1.0d);
+            setGripPosition(0.9d);
         }
     }
 
-    public void intake_motor() {
-        if (intake_running) {
-            intake_running = false;
-            intake_motor.setPower(0);
+    public void setHandPosition(double newHandPosition) {
+        if (handPosition != newHandPosition) {
+            handPosition = newHandPosition;
+            handServo.setPosition(handPosition);
+        }
+    }
 
+    public void toggleHand() {
+        if (handPosition == 0.42d) {
+            setHandPosition(0d);
         } else {
-            intake_running = true;
-            intake_motor.setPower(1.0);
+            setHandPosition(0.42d);
+        }
+    }
+
+    public void toggleHandMiddle() {
+        if (handPosition == 0.42d) {
+            setHandPosition(1d);
+        } else {
+            setHandPosition(0.42d);
+        }
+    }
+
+    public void handDown() {
+        if (handPosition < 1d) {
+            setHandPosition(handPosition + 0.0025d);
+        }
+    }
+
+    public void handUp() {
+        if (handPosition > 0d) {
+            setHandPosition(handPosition - 0.0025d);
         }
     }
 }
