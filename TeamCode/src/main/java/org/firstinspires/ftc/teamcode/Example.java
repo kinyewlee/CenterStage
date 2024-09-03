@@ -13,14 +13,6 @@ public class Example extends AutonomousBase {
         // Wait for the game to start (driver presses PLAY)
         // Abort this loop is started or stopped.
         setupAndWait();
-        robot.armServo.setPosition(0.4d);
-        sleep(500);
-        robotDriver.gyroDrive(1d, 50d, 0d, 5d, null);
-        //release to bucket+
-        robot.roller.setPosition(0);
-        sleep(3000);
-        robot.roller.setPosition(0.5);
-        sleep(500);
     }
 }
 

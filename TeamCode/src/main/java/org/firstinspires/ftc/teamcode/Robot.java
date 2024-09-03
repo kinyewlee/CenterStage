@@ -28,9 +28,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Robot {
-    public DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public Servo armServo;
-    public Servo roller;
+    public DcMotorEx leftFront, leftRear, rightRear, rightFront, armMotor;
+    public Servo handServo, rollerServo;
+    public AnalogInput angleSensor;
     private List<DcMotorEx> motors;
     private Context _appContext;
     private int[] beepSoundID = new int[3];
@@ -60,11 +60,15 @@ public class Robot {
         rightFront.setDirection(Direction.FORWARD);
         rightRear.setDirection(Direction.FORWARD);
 
-        armServo = hardwareMap.servo.get("servo_arm");
-        armPosition = armServo.getPosition();
+        armMotor = hardwareMap.get(DcMotorEx.class, "arm");
+        armMotor.setDirection(Direction.REVERSE);
+        armMotor.setZeroPowerBehavior(ZeroPowerBehavior.BRAKE);
 
-        roller = hardwareMap.servo.get("roller");
-        rollerMovement = roller.getPosition();
+        angleSensor = hardwareMap.analogInput.get("angle");
+        handServo = hardwareMap.servo.get("hand");
+
+        rollerServo = hardwareMap.servo.get("roller");
+        rollerMovement = rollerServo.getPosition();
 
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
@@ -164,43 +168,27 @@ public class Robot {
                 rightFront.isBusy() && rightRear.isBusy();
     }
 
-    public void setArmPosition(double newArmPosition) {
-        if (armPosition != newArmPosition) {
-            armPosition = newArmPosition;
-            armServo.setPosition(armPosition);
-        }
-    }
-
-    public void toggleArm() {
-        if (armPosition == 0.4d) {
-            setArmPosition(0.5d);
-        } else if (armPosition == 0.5d) {
-            setArmPosition(0d);
-        } else {
-            setArmPosition(0.4d);
-        }
-    }
-
     public void setRollerMovement(double newRollerMovement) {
         if (rollerMovement != newRollerMovement) {
             rollerMovement = newRollerMovement;
-            roller.setPosition(rollerMovement);
+            rollerServo.setPosition(rollerMovement);
         }
     }
-    public void Intake() {
-        if (rollerMovement != 1) {
+    public void intake() {
+        if (rollerMovement != 0.5) {
+            stopRoller();
+        } else {
             setRollerMovement(1);
         }
     }
-    public void Outtake() {
-        if (rollerMovement != 0) {
+    public void outtake() {
+        if (rollerMovement != 0.5) {
+            stopRoller();
+        } else {
             setRollerMovement(0);
         }
     }
-    public void StopRoller() {
-        if (rollerMovement != 0.5) {
-            setRollerMovement(0.5);
-        }
+    public void stopRoller() {
+        setRollerMovement(0.5);
     }
-
 }
