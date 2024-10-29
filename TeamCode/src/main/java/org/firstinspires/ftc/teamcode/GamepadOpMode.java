@@ -30,6 +30,8 @@ public class GamepadOpMode extends OpModeBase {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            boolean limitSwitch = robot.limitSwitch.getState();
+
             //region a button
             if (gamepad1.a || gamepad2.a) {
                 if (!a_pressed) {
@@ -41,7 +43,7 @@ public class GamepadOpMode extends OpModeBase {
             }
             //endregion
 
-            //region a button
+            //region b button
             if (gamepad1.b || gamepad2.b) {
                 if (!b_pressed) {
                     b_pressed = true;
@@ -56,6 +58,9 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.x || gamepad2.x) {
                 if (!x_pressed) {
                     x_pressed = true;
+                    if (limitSwitch) {
+                        robot.toggleOuttake();
+                    }
                 }
             } else { // Reset the 'X' button press flag
                 x_pressed = false;
@@ -64,7 +69,6 @@ public class GamepadOpMode extends OpModeBase {
 
             //region arm control
             int currentArmPosition = robot.liftMotor.getCurrentPosition();
-            boolean limitSwitch = robot.limitSwitch.getState();
             if (gamepad1.left_trigger > 0d) { // raise lift
                 if (!limitSwitch) { // touched
                 }
@@ -105,6 +109,7 @@ public class GamepadOpMode extends OpModeBase {
                     robot.setLiftMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     robot.liftMotor.setTargetPosition(armLimit);
                     robot.setLiftMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.setRollerPosition(0.5d);
                     loweringInProgress = false;
                     raisingInProgress = !raisingInProgress;
                 }
@@ -122,6 +127,7 @@ public class GamepadOpMode extends OpModeBase {
             if (gamepad1.right_bumper || gamepad2.right_bumper) {
                 if (!rb_pressed) {
                     rb_pressed = true;
+                    robot.setOuttake(0d);
                     loweringInProgress = !loweringInProgress;
                     raisingInProgress = false;
                     liftStartTime = System.currentTimeMillis();

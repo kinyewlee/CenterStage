@@ -29,7 +29,7 @@ import java.util.List;
 
 public class Robot {
     public DcMotorEx leftFront, leftRear, rightRear, rightFront, liftMotor;
-    public Servo leftServo, rightServo, rollerServo, handServo;
+    public Servo leftServo, rightServo, rollerServo, handServo, outtakeServo;
     public DigitalChannel limitSwitch;
     private List<DcMotorEx> motors;
     private Context _appContext;
@@ -45,7 +45,7 @@ public class Robot {
     private static final double WHEEL_DIAMETER_INCHES = 2.953d;     // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.14159265359d);
-    double slidePosition, handPosition, rollerPosition;
+    double slidePosition, handPosition, rollerPosition, outtakePosition;
     private RunMode liftMode;
 
     public void init(HardwareMap hardwareMap) {
@@ -62,12 +62,15 @@ public class Robot {
 
         leftServo = hardwareMap.servo.get("servo_left");
         rightServo = hardwareMap.servo.get("servo_right");
-        slidePosition = leftServo.getPosition();
+        setSlidePosition(1d, 0d);
 
         rollerServo = hardwareMap.servo.get("servo_roller");
-        rollerPosition = rollerServo.getPosition();
+        setRollerPosition(0.5d);
         handServo = hardwareMap.servo.get("servo_hand");
         handPosition = handServo.getPosition();
+
+        outtakeServo = hardwareMap.servo.get("servo_outtake");
+        setOuttake(0d);
 
         limitSwitch = hardwareMap.get(DigitalChannel.class, "limit_sensor");
         liftMotor = hardwareMap.get(DcMotorEx.class, "lift");
@@ -204,11 +207,28 @@ public class Robot {
     public void intake() {
         if (rollerPosition != 0.5d) {
             setRollerPosition(0.5);
-        } else if (slidePosition == 1d) {
+            if (slidePosition == 0d) {
+                handServo.setPosition(0.5d);
+            }
+        } else if (slidePosition == 1d) { // Transfer
             setRollerPosition(0d);
-        } else if (slidePosition == 0d) {
+        } else if (slidePosition == 0d) { // Intake
             handServo.setPosition(0d);
             setRollerPosition(1d);
+        }
+    }
+
+    public void setOuttake(double newOuttakePosition) {
+        if (outtakePosition != newOuttakePosition) {
+            outtakePosition = newOuttakePosition;
+            outtakeServo.setPosition(outtakePosition);
+        }
+    }
+    public void toggleOuttake() {
+        if (outtakePosition != 0d) {
+            setOuttake(0d);
+        } else {
+            setOuttake(1d);
         }
     }
 
